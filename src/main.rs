@@ -39,8 +39,8 @@ fn parse_file_content(file_contents: String) {
     for char in file_contents.chars() {
         match char {
             '(' => println!("LEFT_PAREN ( null"),
-            ')' => println!("RIGHT_PAREN ( null"),
-            _ => println!()
+            ')' => println!("RIGHT_PAREN ) null"),
+            _ => println!(),
         }
     }
     println!("EOF  null");
