@@ -1,6 +1,30 @@
 use std::env;
+use std::fmt::{Display, Formatter, Result};
 use std::fs;
 use std::io::{self, Write};
+
+#[derive(Debug)]
+enum TokenType {
+    LeftParen,
+    RightParen,
+    Eof,
+}
+
+impl TokenType {
+    fn display_name(&self) -> &str {
+        match &self {
+            TokenType::RightParen => "LEFT_PAREN",
+            TokenType::LeftParen => "RIGHT_PAREN",
+            TokenType::Eof => "EOF",
+        }
+    }
+}
+
+impl Display for TokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", self.display_name())
+    }
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -38,10 +62,9 @@ fn main() {
 fn parse_file_content(file_contents: String) {
     for char in file_contents.chars() {
         match char {
-            '(' => println!("LEFT_PAREN ( null"),
-            ')' => println!("RIGHT_PAREN ) null"),
-            _ => println!(),
+            '(' => println!("{} {char} null", TokenType::LeftParen),
+            ')' => println!("{} {char} null", TokenType::RightParen),
+            _ => println!("{} null", TokenType::Eof),
         }
     }
-    println!("EOF  null");
 }
