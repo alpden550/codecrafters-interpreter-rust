@@ -45,7 +45,8 @@ fn parse_file_content(file_contents: String) {
             ')' => println!("{} {char} null", TokenType::RightParen),
             '{' => println!("{} {char} null", TokenType::LeftBrace),
             '}' => println!("{} {char} null", TokenType::RightBrace),
-            _ => println!("{} null", TokenType::Eof),
+            _ => {}
         }
     }
+    println!("{}  null", TokenType::Eof);
 }
