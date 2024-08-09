@@ -1,17 +1,20 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug)]
 pub enum TokenType {
     LeftParen,
     RightParen,
+    RightBrace,
+    LeftBrace,
     Eof,
 }
 
 impl TokenType {
     fn display_name(&self) -> &str {
         match &self {
-            TokenType::RightParen => "LEFT_PAREN",
-            TokenType::LeftParen => "RIGHT_PAREN",
+            TokenType::RightParen => "RIGHT_PAREN",
+            TokenType::LeftParen => "LEFT_PAREN",
+            TokenType::RightBrace => "RIGHT_BRACE",
+            TokenType::LeftBrace => "LEFT_BRACE",
             TokenType::Eof => "EOF",
         }
     }
