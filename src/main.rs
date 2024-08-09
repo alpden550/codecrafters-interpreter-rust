@@ -45,6 +45,13 @@ fn parse_file_content(file_contents: String) {
             ')' => println!("{} {char} null", TokenType::RightParen),
             '{' => println!("{} {char} null", TokenType::LeftBrace),
             '}' => println!("{} {char} null", TokenType::RightBrace),
+            ',' => println!("{} {char} null", TokenType::Comma),
+            '.' => println!("{} {char} null", TokenType::Dot),
+            '-' => println!("{} {char} null", TokenType::Minus),
+            '+' => println!("{} {char} null", TokenType::Plus),
+            ';' => println!("{} {char} null", TokenType::Semicolon),
+            '*' => println!("{} {char} null", TokenType::Star),
+            '/' => println!("{} {char} null", TokenType::Slash),
             _ => {}
         }
     }
