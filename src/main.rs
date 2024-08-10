@@ -47,24 +47,59 @@ fn parse_file_content(file_contents: &String) -> i32 {
     let lines = file_contents.lines();
 
     for (line_number, line) in lines.enumerate() {
-        for char in line.chars() {
-            match char {
-                '(' => println!("{} {char} null", TokenType::LeftParen),
-                ')' => println!("{} {char} null", TokenType::RightParen),
-                '{' => println!("{} {char} null", TokenType::LeftBrace),
-                '}' => println!("{} {char} null", TokenType::RightBrace),
-                ',' => println!("{} {char} null", TokenType::Comma),
-                '.' => println!("{} {char} null", TokenType::Dot),
-                '-' => println!("{} {char} null", TokenType::Minus),
-                '+' => println!("{} {char} null", TokenType::Plus),
-                ';' => println!("{} {char} null", TokenType::Semicolon),
-                '*' => println!("{} {char} null", TokenType::Star),
-                '/' => println!("{} {char} null", TokenType::Slash),
+        let mut chars = line.chars().peekable();
+
+        while let Some(c) = chars.next() {
+            match c {
+                '(' => println!("{} {c} null", TokenType::LeftParen),
+                ')' => println!("{} {c} null", TokenType::RightParen),
+                '{' => println!("{} {c} null", TokenType::LeftBrace),
+                '}' => println!("{} {c} null", TokenType::RightBrace),
+                ',' => println!("{} {c} null", TokenType::Comma),
+                '.' => println!("{} {c} null", TokenType::Dot),
+                '-' => println!("{} {c} null", TokenType::Minus),
+                '+' => println!("{} {c} null", TokenType::Plus),
+                ';' => println!("{} {c} null", TokenType::Semicolon),
+                '*' => println!("{} {c} null", TokenType::Star),
+                '/' => println!("{} {c} null", TokenType::Slash),
+                '!' => match chars.peek() {
+                    Some('=') => {
+                        let next = chars.next().unwrap();
+                        println!("{} {c}{next} null", TokenType::BangEqual);
+                    }
+                    _ => {
+                        println!("{} {c} null", TokenType::Bang)
+                    }
+                },
+                '=' => match chars.peek() {
+                    Some('=') => {
+                        let next = chars.next().unwrap();
+                        println!("{} {c}{next} null", TokenType::EqualEqual);
+                    }
+                    _ => {
+                        println!("{} {c} null", TokenType::Equal)
+                    }
+                },
+                '>' => match chars.peek() {
+                    Some('=') => {
+                        let next = chars.next().unwrap();
+                        println!("{} {c}{next} null", TokenType::GreaterEqual);
+                    }
+                    _ => {
+                        println!("{} {c} null", TokenType::Greater)
+                    }
+                },
+                '<' => match chars.peek() {
+                    Some('=') => {
+                        let next = chars.next().unwrap();
+                        println!("{} {c}{next} null", TokenType::LessEqual);
+                    }
+                    _ => {
+                        println!("{} {c} null", TokenType::Less)
+                    }
+                },
                 _ => {
-                    eprintln!(
-                        "[line {}] Error: Unexpected character: {char}",
-                        line_number + 1
-                    );
+                    print_error_line(line_number, c);
                     exit_code = 65;
                 }
             }
@@ -73,4 +108,11 @@ fn parse_file_content(file_contents: &String) -> i32 {
 
     println!("{}  null", TokenType::Eof);
     exit_code
+}
+
+fn print_error_line(line_number: usize, token: char) {
+    eprintln!(
+        "[line {}] Error: Unexpected character: {token}",
+        line_number + 1
+    );
 }

@@ -14,6 +14,15 @@ pub enum TokenType {
     Star,
     Slash,
     Eof,
+    // One or two character tokens.
+    Bang,
+    BangEqual,
+    Equal,
+    EqualEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
 }
 
 impl TokenType {
@@ -30,6 +39,14 @@ impl TokenType {
             TokenType::Semicolon => "SEMICOLON",
             TokenType::Star => "STAR",
             TokenType::Slash => "SLASH",
+            TokenType::Bang => "BANG",
+            TokenType::BangEqual => "BANG_EQUAL",
+            TokenType::Equal => "EQUAL",
+            TokenType::EqualEqual => "EQUAL_EQUAL",
+            TokenType::Greater => "GREATER",
+            TokenType::GreaterEqual => "GREATER_EQUAL",
+            TokenType::Less => "LESS",
+            TokenType::LessEqual => "LESS_EQUAL",
             TokenType::Eof => "EOF",
         }
     }
