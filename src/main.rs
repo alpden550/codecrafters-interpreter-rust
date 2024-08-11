@@ -126,6 +126,7 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(TokenType::Less, c.to_string(), None));
                     }
                 },
+                ' ' | '\t' | '\r' => {}
                 _ => {
                     print_error_line(line_number + 1, c);
                     exit_code = 65;
