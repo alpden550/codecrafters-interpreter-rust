@@ -66,7 +66,10 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
                 '+' => tokens.push(Token::new(TokenType::Plus, c.to_string(), None)),
                 ';' => tokens.push(Token::new(TokenType::Semicolon, c.to_string(), None)),
                 '*' => tokens.push(Token::new(TokenType::Star, c.to_string(), None)),
-                '/' => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
+                '/' => match chars.peek() {
+                    Some('/') => break,
+                    _ => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
+                },
                 '!' => match chars.peek() {
                     Some('=') => {
                         let next = chars.next().unwrap();
