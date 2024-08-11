@@ -49,7 +49,6 @@ fn main() {
 fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
     let mut exit_code = 0;
     let mut tokens: Vec<Token> = vec![];
-    let doubled_tokens = ['!', '=', '<', '>'];
 
     let lines = file_contents.lines();
     for (line_number, line) in lines.enumerate() {
@@ -132,7 +131,7 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
         }
     }
 
-    tokens.push(Token::new(TokenType::Eof, "  ".to_string(), None));
+    tokens.push(Token::new(TokenType::Eof, "".to_string(), None));
     (tokens, exit_code)
 }
 
