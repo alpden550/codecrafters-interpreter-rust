@@ -68,6 +68,20 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
                 ';' => tokens.push(Token::new(TokenType::Semicolon, c.to_string(), None)),
                 '*' => tokens.push(Token::new(TokenType::Star, c.to_string(), None)),
                 '/' => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
+                '!' => match chars.peek() {
+                    Some('=') => {
+                        let next = chars.next().unwrap();
+                        let formatted = format!("{}{}", c, next);
+                        tokens.push(Token::new(
+                            TokenType::BangEqual,
+                            formatted.to_string(),
+                            None,
+                        ));
+                    }
+                    _ => {
+                        tokens.push(Token::new(TokenType::Bang, c.to_string(), None));
+                    }
+                },
                 '=' => match chars.peek() {
                     Some('=') => {
                         let next = chars.next().unwrap();
