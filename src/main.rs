@@ -1,5 +1,6 @@
 mod tokens;
 
+use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
 use std::env;
 use std::fs;
@@ -27,7 +28,10 @@ fn main() {
             });
 
             if !file_contents.is_empty() {
-                let exit_code = parse_file_content(&file_contents);
+                let (tokens, exit_code) = parse_file_content(&file_contents);
+                for token in tokens {
+                    println!("{}", token);
+                }
                 if exit_code != 0 {
                     exit(exit_code);
                 }
@@ -42,77 +46,85 @@ fn main() {
     }
 }
 
-fn parse_file_content(file_contents: &String) -> i32 {
+fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
     let mut exit_code = 0;
-    let lines = file_contents.lines();
+    let mut tokens: Vec<Token> = vec![];
+    let doubled_tokens = ['!', '=', '<', '>'];
 
+    let lines = file_contents.lines();
     for (line_number, line) in lines.enumerate() {
         let mut chars = line.chars().peekable();
 
         while let Some(c) = chars.next() {
             match c {
-                '(' => println!("{} {c} null", TokenType::LeftParen),
-                ')' => println!("{} {c} null", TokenType::RightParen),
-                '{' => println!("{} {c} null", TokenType::LeftBrace),
-                '}' => println!("{} {c} null", TokenType::RightBrace),
-                ',' => println!("{} {c} null", TokenType::Comma),
-                '.' => println!("{} {c} null", TokenType::Dot),
-                '-' => println!("{} {c} null", TokenType::Minus),
-                '+' => println!("{} {c} null", TokenType::Plus),
-                ';' => println!("{} {c} null", TokenType::Semicolon),
-                '*' => println!("{} {c} null", TokenType::Star),
-                '/' => println!("{} {c} null", TokenType::Slash),
-                '!' => match chars.peek() {
-                    Some('=') => {
-                        let next = chars.next().unwrap();
-                        println!("{} {c}{next} null", TokenType::BangEqual);
-                    }
-                    _ => {
-                        println!("{} {c} null", TokenType::Bang)
-                    }
-                },
+                '(' => tokens.push(Token::new(TokenType::LeftParen, c.to_string(), None)),
+                ')' => tokens.push(Token::new(TokenType::RightParen, c.to_string(), None)),
+                '{' => tokens.push(Token::new(TokenType::LeftBrace, c.to_string(), None)),
+                '}' => tokens.push(Token::new(TokenType::RightBrace, c.to_string(), None)),
+                ',' => tokens.push(Token::new(TokenType::Comma, c.to_string(), None)),
+                '.' => tokens.push(Token::new(TokenType::Dot, c.to_string(), None)),
+                '-' => tokens.push(Token::new(TokenType::Minus, c.to_string(), None)),
+                '+' => tokens.push(Token::new(TokenType::Plus, c.to_string(), None)),
+                ';' => tokens.push(Token::new(TokenType::Semicolon, c.to_string(), None)),
+                '*' => tokens.push(Token::new(TokenType::Star, c.to_string(), None)),
+                '/' => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
                 '=' => match chars.peek() {
                     Some('=') => {
                         let next = chars.next().unwrap();
-                        println!("{} {c}{next} null", TokenType::EqualEqual);
+                        let formatted = format!("{}{}", c, next);
+                        tokens.push(Token::new(
+                            TokenType::EqualEqual,
+                            formatted.to_string(),
+                            None,
+                        ));
                     }
                     _ => {
-                        println!("{} {c} null", TokenType::Equal)
+                        tokens.push(Token::new(TokenType::Equal, c.to_string(), None));
                     }
                 },
                 '>' => match chars.peek() {
                     Some('=') => {
                         let next = chars.next().unwrap();
-                        println!("{} {c}{next} null", TokenType::GreaterEqual);
+                        let formatted = format!("{}{}", c, next);
+                        tokens.push(Token::new(
+                            TokenType::GreaterEqual,
+                            formatted.to_string(),
+                            None,
+                        ));
                     }
                     _ => {
-                        println!("{} {c} null", TokenType::Greater)
+                        tokens.push(Token::new(TokenType::Greater, c.to_string(), None));
                     }
                 },
                 '<' => match chars.peek() {
                     Some('=') => {
                         let next = chars.next().unwrap();
-                        println!("{} {c}{next} null", TokenType::LessEqual);
+                        let formatted = format!("{}{}", c, next);
+                        tokens.push(Token::new(
+                            TokenType::LessEqual,
+                            formatted.to_string(),
+                            None,
+                        ));
                     }
                     _ => {
-                        println!("{} {c} null", TokenType::Less)
+                        tokens.push(Token::new(TokenType::Less, c.to_string(), None));
                     }
                 },
                 _ => {
-                    print_error_line(line_number, c);
+                    print_error_line(line_number + 1, c);
                     exit_code = 65;
                 }
             }
         }
     }
 
-    println!("{}  null", TokenType::Eof);
-    exit_code
+    tokens.push(Token::new(TokenType::Eof, "  ".to_string(), None));
+    (tokens, exit_code)
 }
 
 fn print_error_line(line_number: usize, token: char) {
     eprintln!(
         "[line {}] Error: Unexpected character: {token}",
-        line_number + 1
+        line_number
     );
 }
