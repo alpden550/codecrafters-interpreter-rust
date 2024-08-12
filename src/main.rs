@@ -147,6 +147,28 @@ fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         str_value.into(),
                     ));
                 }
+                token if token.is_digit(10) => {
+                    let mut num_value = String::from(token);
+                    let mut is_dot = false;
+
+                    while let Some(t) = chars.peek() {
+                        if t.is_digit(10) {
+                            num_value.push(*t);
+                            chars.next();
+                        } else if *t == '.' && !is_dot {
+                            num_value.push(*t);
+                            chars.next();
+                            is_dot = true;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    tokens.push(parse_number(&num_value));
+                    if num_value.ends_with(".") {
+                        tokens.push(Token::new(TokenType::Dot, '.'.to_string(), None));
+                    }
+                }
                 _ => {
                     print_error_token_line(line_number + 1, c);
                     exit_code = 65;
@@ -164,4 +186,21 @@ fn print_error_token_line(line_number: usize, token: char) {
         "[line {}] Error: Unexpected character: {token}",
         line_number
     );
+}
+
+fn parse_number(raw_value: &String) -> Token {
+    let mut name = String::from(raw_value);
+    let mut value = String::from(raw_value);
+    if raw_value.ends_with(".") {
+        name = name.replace(".", "");
+        value.push('0');
+    } else if raw_value.contains(".") && !raw_value.ends_with(".") {
+        name = name;
+        value = value;
+    } else {
+        value.push('.');
+        value.push('0');
+    }
+
+    Token::new(TokenType::Number, name, value.into())
 }
