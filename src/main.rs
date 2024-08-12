@@ -28,7 +28,7 @@ fn main() {
             });
 
             if !file_contents.is_empty() {
-                let (tokens, exit_code) = parse_file_content(&file_contents);
+                let (tokens, exit_code) = parse_tokens(&file_contents);
                 for token in tokens {
                     println!("{}", token);
                 }
@@ -46,7 +46,7 @@ fn main() {
     }
 }
 
-fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
+fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
     let mut exit_code = 0;
     let mut tokens: Vec<Token> = vec![];
 
@@ -54,7 +54,7 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
     for (line_number, line) in lines.enumerate() {
         let mut chars = line.chars().peekable();
 
-        while let Some(c) = chars.next() {
+        'line_loop: while let Some(c) = chars.next() {
             match c {
                 '(' => tokens.push(Token::new(TokenType::LeftParen, c.to_string(), None)),
                 ')' => tokens.push(Token::new(TokenType::RightParen, c.to_string(), None)),
@@ -127,8 +127,28 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
                     }
                 },
                 ' ' | '\t' | '\r' => {}
+                '"' => {
+                    let mut str_value = String::new();
+                    loop {
+                        let value = chars.next();
+                        match value {
+                            Some('"') => break,
+                            Some(_) => str_value.push(value.unwrap()),
+                            None => {
+                                eprintln!("[line {}] Error: Unterminated string.", line_number + 1);
+                                exit_code = 65;
+                                break 'line_loop;
+                            }
+                        }
+                    }
+                    tokens.push(Token::new(
+                        TokenType::String,
+                        format!("\"{}\"", str_value),
+                        str_value.into(),
+                    ));
+                }
                 _ => {
-                    print_error_line(line_number + 1, c);
+                    print_error_token_line(line_number + 1, c);
                     exit_code = 65;
                 }
             }
@@ -139,7 +159,7 @@ fn parse_file_content(file_contents: &String) -> (Vec<Token>, i32) {
     (tokens, exit_code)
 }
 
-fn print_error_line(line_number: usize, token: char) {
+fn print_error_token_line(line_number: usize, token: char) {
     eprintln!(
         "[line {}] Error: Unexpected character: {token}",
         line_number

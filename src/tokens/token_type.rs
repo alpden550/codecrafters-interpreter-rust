@@ -23,6 +23,8 @@ pub enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
+    // Literals
+    String,
 }
 
 impl TokenType {
@@ -47,6 +49,7 @@ impl TokenType {
             TokenType::GreaterEqual => "GREATER_EQUAL",
             TokenType::Less => "LESS",
             TokenType::LessEqual => "LESS_EQUAL",
+            TokenType::String => "STRING",
             TokenType::Eof => "EOF",
         }
     }
