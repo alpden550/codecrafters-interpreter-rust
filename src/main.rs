@@ -169,6 +169,18 @@ fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(TokenType::Dot, '.'.to_string(), None));
                     }
                 }
+                token if token.is_alphanumeric() || token == '_' => {
+                    let mut identifier = String::from(token);
+                    while let Some(t) = chars.peek() {
+                        if t.is_alphanumeric() || *t == '_' {
+                            identifier.push(*t);
+                            chars.next();
+                        } else {
+                            break;
+                        }
+                    }
+                    tokens.push(Token::new(TokenType::Identifier, identifier, None));
+                }
                 _ => {
                     print_error_token_line(line_number + 1, c);
                     exit_code = 65;
@@ -197,6 +209,10 @@ fn parse_number(raw_value: &String) -> Token {
     } else if !raw_value.contains(".") {
         value.push('.');
         value.push('0');
+    }
+
+    if value.ends_with("00") {
+        value.pop();
     }
 
     Token::new(TokenType::Number, name, value.into())

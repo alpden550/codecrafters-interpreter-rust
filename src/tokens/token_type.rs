@@ -26,6 +26,7 @@ pub enum TokenType {
     // Literals
     String,
     Number,
+    Identifier,
 }
 
 impl TokenType {
@@ -52,6 +53,7 @@ impl TokenType {
             TokenType::LessEqual => "LESS_EQUAL",
             TokenType::String => "STRING",
             TokenType::Number => "NUMBER",
+            TokenType::Identifier => "IDENTIFIER",
             TokenType::Eof => "EOF",
         }
     }
