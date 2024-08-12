@@ -194,10 +194,7 @@ fn parse_number(raw_value: &String) -> Token {
     if raw_value.ends_with(".") {
         name = name.replace(".", "");
         value.push('0');
-    } else if raw_value.contains(".") && !raw_value.ends_with(".") {
-        name = name;
-        value = value;
-    } else {
+    } else if !raw_value.contains(".") {
         value.push('.');
         value.push('0');
     }
