@@ -179,7 +179,8 @@ fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             break;
                         }
                     }
-                    tokens.push(Token::new(TokenType::Identifier, identifier, None));
+                    let token_type = TokenType::get_keyword_or_identifier(identifier.as_str());
+                    tokens.push(Token::new(token_type, identifier, None));
                 }
                 _ => {
                     print_error_token_line(line_number + 1, c);

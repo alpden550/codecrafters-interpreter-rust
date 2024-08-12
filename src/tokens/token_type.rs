@@ -1,6 +1,7 @@
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
-pub enum TokenType {
+pub(crate) enum TokenType {
     // Single-character tokens
     LeftParen,
     RightParen,
@@ -27,6 +28,22 @@ pub enum TokenType {
     String,
     Number,
     Identifier,
+    // Keywords
+    And,
+    Class,
+    Else,
+    False,
+    For,
+    Fun,
+    If,
+    Nil,
+    Or,
+    Return,
+    Super,
+    This,
+    True,
+    Var,
+    While,
 }
 
 impl TokenType {
@@ -54,8 +71,45 @@ impl TokenType {
             TokenType::String => "STRING",
             TokenType::Number => "NUMBER",
             TokenType::Identifier => "IDENTIFIER",
+            TokenType::And => "AND",
+            TokenType::Class => "CLASS",
+            TokenType::Else => "ELSE",
+            TokenType::False => "FALSE",
+            TokenType::For => "FOR",
+            TokenType::Fun => "FUN",
+            TokenType::If => "IF",
+            TokenType::Nil => "NIL",
+            TokenType::Or => "OR",
+            TokenType::Return => "RETURN",
+            TokenType::Super => "SUPER",
+            TokenType::This => "THIS",
+            TokenType::True => "TRUE",
+            TokenType::Var => "VAR",
+            TokenType::While => "WHILE",
             TokenType::Eof => "EOF",
         }
+    }
+
+    pub fn get_keyword_or_identifier(key: &str) -> Self {
+        let mut keywords: HashMap<&'static str, TokenType> = HashMap::from([
+            ("and", TokenType::And),
+            ("class", TokenType::Class),
+            ("else", TokenType::Else),
+            ("false", TokenType::False),
+            ("for", TokenType::For),
+            ("fun", TokenType::Fun),
+            ("if", TokenType::If),
+            ("nil", TokenType::Nil),
+            ("or", TokenType::Or),
+            ("return", TokenType::Return),
+            ("super", TokenType::Super),
+            ("this", TokenType::This),
+            ("true", TokenType::True),
+            ("var", TokenType::Var),
+            ("while", TokenType::While),
+        ]);
+
+        keywords.remove(key).unwrap_or(TokenType::Identifier)
     }
 }
 
