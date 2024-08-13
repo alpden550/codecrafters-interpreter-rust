@@ -1,6 +1,8 @@
 mod errors;
+mod evaluator;
 mod tokens;
 
+use crate::evaluator::evaluate;
 use crate::tokens::token::parse_tokens;
 use std::{
     env, fs,
@@ -22,10 +24,6 @@ fn main() {
         String::new()
     });
 
-    if file_contents.is_empty() {
-        println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
-    }
-
     match command.as_str() {
         "tokenize" => {
             let (tokens, exit_code) = parse_tokens(&file_contents);
@@ -36,10 +34,13 @@ fn main() {
                 exit(exit_code);
             }
         }
-        "scan" => {
-            let (_tokens, exit_code) = parse_tokens(&file_contents);
+        "evaluate" => {
+            let (tokens, exit_code) = parse_tokens(&file_contents);
             if exit_code != 0 {
                 exit(exit_code);
+            }
+            for token in tokens {
+                println!("{}", evaluate(&token));
             }
         }
         _ => {

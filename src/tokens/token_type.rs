@@ -23,7 +23,6 @@ pub(crate) enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
-    Comment,
     // Literals
     String,
     Number,
@@ -44,6 +43,7 @@ pub(crate) enum TokenType {
     True,
     Var,
     While,
+    Print,
 }
 
 impl TokenType {
@@ -68,7 +68,6 @@ impl TokenType {
             TokenType::GreaterEqual => "GREATER_EQUAL",
             TokenType::Less => "LESS",
             TokenType::LessEqual => "LESS_EQUAL",
-            TokenType::Comment => "COMMENT",
             TokenType::String => "STRING",
             TokenType::Number => "NUMBER",
             TokenType::Identifier => "IDENTIFIER",
@@ -87,6 +86,7 @@ impl TokenType {
             TokenType::True => "TRUE",
             TokenType::Var => "VAR",
             TokenType::While => "WHILE",
+            TokenType::Print => "PRINT",
             TokenType::Eof => "EOF",
         }
     }
@@ -108,6 +108,7 @@ impl TokenType {
             "true" => TokenType::True,
             "var" => TokenType::Var,
             "while" => TokenType::While,
+            "print" => TokenType::Print,
             _ => TokenType::Identifier,
         }
     }

@@ -3,9 +3,9 @@ use crate::tokens::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
 pub struct Token {
-    token_type: TokenType,
-    name: String,
-    value: Option<String>,
+    pub token_type: TokenType,
+    pub name: String,
+    pub value: Option<String>,
 }
 
 impl Token {
@@ -70,12 +70,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                 '*' => tokens.push(Token::new(TokenType::Star, c.to_string(), None)),
                 '/' => match chars.peek() {
                     Some('/') => {
-                        tokens.push(Token::new(
-                            TokenType::Comment,
-                            TokenType::Comment.to_string().to_lowercase(),
-                            line.replace("//", "").trim().to_string().into(),
-                        ));
-                        break 'line_loop;
+                        break;
                     }
                     _ => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
                 },
