@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 pub(crate) enum TokenType {
@@ -24,6 +23,7 @@ pub(crate) enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
+    Comment,
     // Literals
     String,
     Number,
@@ -68,6 +68,7 @@ impl TokenType {
             TokenType::GreaterEqual => "GREATER_EQUAL",
             TokenType::Less => "LESS",
             TokenType::LessEqual => "LESS_EQUAL",
+            TokenType::Comment => "COMMENT",
             TokenType::String => "STRING",
             TokenType::Number => "NUMBER",
             TokenType::Identifier => "IDENTIFIER",
@@ -91,25 +92,24 @@ impl TokenType {
     }
 
     pub fn get_keyword_or_identifier(key: &str) -> Self {
-        let mut keywords: HashMap<&'static str, TokenType> = HashMap::from([
-            ("and", TokenType::And),
-            ("class", TokenType::Class),
-            ("else", TokenType::Else),
-            ("false", TokenType::False),
-            ("for", TokenType::For),
-            ("fun", TokenType::Fun),
-            ("if", TokenType::If),
-            ("nil", TokenType::Nil),
-            ("or", TokenType::Or),
-            ("return", TokenType::Return),
-            ("super", TokenType::Super),
-            ("this", TokenType::This),
-            ("true", TokenType::True),
-            ("var", TokenType::Var),
-            ("while", TokenType::While),
-        ]);
-
-        keywords.remove(key).unwrap_or(TokenType::Identifier)
+        match key {
+            "and" => TokenType::And,
+            "class" => TokenType::Class,
+            "else" => TokenType::Else,
+            "false" => TokenType::False,
+            "for" => TokenType::For,
+            "fun" => TokenType::Fun,
+            "if" => TokenType::If,
+            "nil" => TokenType::Nil,
+            "or" => TokenType::Or,
+            "return" => TokenType::Return,
+            "super" => TokenType::Super,
+            "this" => TokenType::This,
+            "true" => TokenType::True,
+            "var" => TokenType::Var,
+            "while" => TokenType::While,
+            _ => TokenType::Identifier,
+        }
     }
 }
 

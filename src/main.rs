@@ -67,7 +67,14 @@ fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                 ';' => tokens.push(Token::new(TokenType::Semicolon, c.to_string(), None)),
                 '*' => tokens.push(Token::new(TokenType::Star, c.to_string(), None)),
                 '/' => match chars.peek() {
-                    Some('/') => break,
+                    Some('/') => {
+                        tokens.push(Token::new(
+                            TokenType::Comment,
+                            TokenType::Comment.to_string().to_lowercase(),
+                            line.replace("//", "").trim().to_string().into(),
+                        ));
+                        break 'line_loop;
+                    }
                     _ => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
                 },
                 '!' => match chars.peek() {
