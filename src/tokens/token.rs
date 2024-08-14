@@ -2,6 +2,7 @@ use crate::errors::print_error_token_line;
 use crate::tokens::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
+#[derive(Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub name: String,

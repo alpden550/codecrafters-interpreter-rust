@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(Debug, PartialEq)]
 pub(crate) enum TokenType {
     // Single-character tokens
     LeftParen,

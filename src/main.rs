@@ -39,8 +39,9 @@ fn main() {
             if exit_code != 0 {
                 exit(exit_code);
             }
-            for token in tokens {
-                println!("{}", evaluate(&token));
+            let values = evaluate(&tokens);
+            for value in values {
+                println!("{}", value);
             }
         }
         _ => {

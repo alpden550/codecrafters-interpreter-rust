@@ -7,7 +7,6 @@ pub enum Value {
     Bool(bool),
     String(String),
     Number(f64),
-    None,
 }
 
 impl Display for Value {
@@ -17,20 +16,29 @@ impl Display for Value {
             Self::Bool(b) => write!(f, "{b}"),
             Self::String(s) => write!(f, "{s}"),
             Self::Number(n) => write!(f, "{n}"),
-            Self::None => Ok(()),
         }
     }
 }
 
-pub fn evaluate(token: &Token) -> Value {
-    let value = token.value.clone();
+pub fn evaluate(tokens: &[Token]) -> Vec<Value> {
+    let mut values: Vec<Value> = vec![];
 
-    match token.token_type {
-        TokenType::Nil => Value::Nil,
-        TokenType::False => Value::Bool(false),
-        TokenType::True => Value::Bool(true),
-        TokenType::String => Value::String(value.unwrap_or("".to_string())),
-        TokenType::Number => Value::Number(value.unwrap().parse().unwrap()),
-        _ => Value::None,
+    for i in 0..tokens.len() {
+        let value = tokens[i].value.clone();
+        match &tokens[i].token_type {
+            TokenType::Nil => values.push(Value::Nil),
+            TokenType::False => values.push(Value::Bool(false)),
+            TokenType::True => values.push(Value::Bool(true)),
+            TokenType::String => values.push(Value::String(value.unwrap_or("".to_string()))),
+            TokenType::Number => values.push(Value::Number(value.unwrap().parse().unwrap())),
+            TokenType::LeftParen => {
+                evaluate(&tokens[i + 1..]);
+            }
+            _ => {
+                continue;
+            }
+        }
     }
+
+    values
 }
