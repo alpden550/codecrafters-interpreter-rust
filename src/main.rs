@@ -1,5 +1,6 @@
 mod errors;
 mod evaluator;
+mod parsers;
 mod tokens;
 
 use crate::evaluator::evaluate;

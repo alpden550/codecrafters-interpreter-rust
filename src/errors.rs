@@ -1,6 +1,26 @@
-pub fn print_error_token_line(line_number: usize, token: char) {
-    eprintln!(
-        "[line {}] Error: Unexpected character: {token}",
-        line_number
-    );
+#[derive(Debug)]
+pub struct ErrorT {
+    line_number: usize,
+    token: Option<char>,
+}
+
+impl ErrorT {
+    pub fn new(line_number: usize, token: Option<char>) -> Self {
+        ErrorT { line_number, token }
+    }
+
+    pub fn print_error_line(&self) {
+        eprintln!(
+            "[line {}] Error: Unexpected character: {}",
+            self.line_number,
+            self.token.unwrap()
+        );
+    }
+
+    pub fn print_error_string(&self) {
+        eprintln!(
+            "[line {}] Error: Unterminated string.",
+            self.line_number + 1
+        );
+    }
 }
