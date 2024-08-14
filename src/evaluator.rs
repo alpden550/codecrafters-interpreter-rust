@@ -17,31 +17,18 @@ impl Display for Value {
             Self::Bool(b) => write!(f, "{b}"),
             Self::String(s) => write!(f, "{s}"),
             Self::Number(n) => write!(f, "{n}"),
-            Self::None => write!(f, ""),
-        }
-    }
-}
-
-impl Value {
-    fn str_to_bool(s: &str) -> Result<bool, &str> {
-        match s.to_lowercase().as_str() {
-            "true" => Ok(true),
-            "false" => Ok(false),
-            _ => Err("Invalid input"),
+            Self::None => Ok(()),
         }
     }
 }
 
 pub fn evaluate(token: &Token) -> Value {
-    let name = token.name.as_str();
     let value = token.value.clone();
 
     match token.token_type {
         TokenType::Nil => Value::Nil,
-        TokenType::False | TokenType::True => {
-            let boolean = Value::str_to_bool(name).unwrap_or(false);
-            Value::Bool(boolean)
-        }
+        TokenType::False => Value::Bool(false),
+        TokenType::True => Value::Bool(true),
         TokenType::String => Value::String(value.unwrap_or("".to_string())),
         TokenType::Number => Value::Number(value.unwrap().parse().unwrap()),
         _ => Value::None,
