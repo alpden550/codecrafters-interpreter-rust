@@ -38,6 +38,7 @@ impl Display for Expr {
             Self::Literal(Literal::String(s)) => write!(f, "{s}"),
             Self::Literal(Literal::Number(n)) => write!(f, "{:?}", n),
             Self::Grouping(e) => write!(f, "(group {e})"),
+            Self::Unary(t, e) => write!(f, "({} {e})", t.name),
             _ => Ok(()),
         }
     }

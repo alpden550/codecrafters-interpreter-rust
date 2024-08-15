@@ -4,7 +4,7 @@ use crate::errors::ErrorT;
 use crate::tokens::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: TokenType,
     pub name: String,
