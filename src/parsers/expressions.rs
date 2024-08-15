@@ -36,7 +36,7 @@ impl Display for Expr {
             Self::Literal(Literal::Nil) => write!(f, "nil"),
             Self::Literal(Literal::Bool(b)) => write!(f, "{b}"),
             Self::Literal(Literal::String(s)) => write!(f, "{s}"),
-            Self::Literal(Literal::Number(n)) => write!(f, "{n}"),
+            Self::Literal(Literal::Number(n)) => write!(f, "{:?}", n),
             Self::Grouping(e) => write!(f, "( {e} )"),
             _ => Ok(()),
         }
