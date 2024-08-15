@@ -2,6 +2,7 @@ use crate::errors::ErrorT;
 use crate::parsers::expressions::{Expr, Literal};
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
+use std::process::exit;
 
 #[allow(dead_code)]
 #[derive(Default, Debug)]
@@ -25,7 +26,10 @@ impl<'a> Parser<'a> {
         while !self.is_at_end() {
             match self.expression() {
                 Ok(e) => self.exprs.push(e),
-                Err(e) => eprintln!("{e}"),
+                Err(e) => {
+                    eprintln!("{e}");
+                    exit(65)
+                }
             };
         }
     }
