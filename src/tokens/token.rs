@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::errors::ErrorT;
 use crate::tokens::token_type::TokenType;
 use std::fmt::{Display, Formatter};
@@ -7,18 +9,25 @@ pub struct Token {
     pub token_type: TokenType,
     pub name: String,
     pub value: Option<String>,
+    pub line_number: usize,
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, name: String, value: Option<String>) -> Self {
+    pub fn new(
+        token_type: TokenType,
+        name: String,
+        value: Option<String>,
+        line_number: usize,
+    ) -> Self {
         Token {
             token_type,
             name,
             value,
+            line_number,
         }
     }
 
-    fn parse_number(raw_value: &String) -> Self {
+    fn parse_number(raw_value: &String, line_number: usize) -> Self {
         let mut name = String::from(raw_value);
         let mut value = String::from(raw_value);
         if raw_value.ends_with(".") {
@@ -33,7 +42,7 @@ impl Token {
             value.pop();
         }
 
-        Token::new(TokenType::Number, name, value.into())
+        Token::new(TokenType::Number, name, value.into(), line_number)
     }
 }
 
@@ -44,7 +53,7 @@ impl Display for Token {
             "{} {} {}",
             self.token_type,
             self.name,
-            self.value.clone().unwrap_or(String::from("null"))
+            self.value.clone().unwrap_or(String::from("null")),
         )
     }
 }
@@ -56,24 +65,75 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
     let lines = file_contents.lines();
     for (line_number, line) in lines.enumerate() {
         let mut chars = line.chars().peekable();
+        let line_number = line_number + 1;
 
         'line_loop: while let Some(c) = chars.next() {
             match c {
-                '(' => tokens.push(Token::new(TokenType::LeftParen, c.to_string(), None)),
-                ')' => tokens.push(Token::new(TokenType::RightParen, c.to_string(), None)),
-                '{' => tokens.push(Token::new(TokenType::LeftBrace, c.to_string(), None)),
-                '}' => tokens.push(Token::new(TokenType::RightBrace, c.to_string(), None)),
-                ',' => tokens.push(Token::new(TokenType::Comma, c.to_string(), None)),
-                '.' => tokens.push(Token::new(TokenType::Dot, c.to_string(), None)),
-                '-' => tokens.push(Token::new(TokenType::Minus, c.to_string(), None)),
-                '+' => tokens.push(Token::new(TokenType::Plus, c.to_string(), None)),
-                ';' => tokens.push(Token::new(TokenType::Semicolon, c.to_string(), None)),
-                '*' => tokens.push(Token::new(TokenType::Star, c.to_string(), None)),
+                '(' => tokens.push(Token::new(
+                    TokenType::LeftParen,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                ')' => tokens.push(Token::new(
+                    TokenType::RightParen,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                '{' => tokens.push(Token::new(
+                    TokenType::LeftBrace,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                '}' => tokens.push(Token::new(
+                    TokenType::RightBrace,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                ',' => tokens.push(Token::new(
+                    TokenType::Comma,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                '.' => tokens.push(Token::new(TokenType::Dot, c.to_string(), None, line_number)),
+                '-' => tokens.push(Token::new(
+                    TokenType::Minus,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                '+' => tokens.push(Token::new(
+                    TokenType::Plus,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                ';' => tokens.push(Token::new(
+                    TokenType::Semicolon,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
+                '*' => tokens.push(Token::new(
+                    TokenType::Star,
+                    c.to_string(),
+                    None,
+                    line_number,
+                )),
                 '/' => match chars.peek() {
                     Some('/') => {
                         break;
                     }
-                    _ => tokens.push(Token::new(TokenType::Slash, c.to_string(), None)),
+                    _ => tokens.push(Token::new(
+                        TokenType::Slash,
+                        c.to_string(),
+                        None,
+                        line_number,
+                    )),
                 },
                 '!' => match chars.peek() {
                     Some('=') => {
@@ -83,10 +143,16 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             TokenType::BangEqual,
                             formatted.to_string(),
                             None,
+                            line_number,
                         ));
                     }
                     _ => {
-                        tokens.push(Token::new(TokenType::Bang, c.to_string(), None));
+                        tokens.push(Token::new(
+                            TokenType::Bang,
+                            c.to_string(),
+                            None,
+                            line_number,
+                        ));
                     }
                 },
                 '=' => match chars.peek() {
@@ -97,10 +163,16 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             TokenType::EqualEqual,
                             formatted.to_string(),
                             None,
+                            line_number,
                         ));
                     }
                     _ => {
-                        tokens.push(Token::new(TokenType::Equal, c.to_string(), None));
+                        tokens.push(Token::new(
+                            TokenType::Equal,
+                            c.to_string(),
+                            None,
+                            line_number,
+                        ));
                     }
                 },
                 '>' => match chars.peek() {
@@ -111,10 +183,16 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             TokenType::GreaterEqual,
                             formatted.to_string(),
                             None,
+                            line_number,
                         ));
                     }
                     _ => {
-                        tokens.push(Token::new(TokenType::Greater, c.to_string(), None));
+                        tokens.push(Token::new(
+                            TokenType::Greater,
+                            c.to_string(),
+                            None,
+                            line_number,
+                        ));
                     }
                 },
                 '<' => match chars.peek() {
@@ -125,10 +203,16 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             TokenType::LessEqual,
                             formatted.to_string(),
                             None,
+                            line_number,
                         ));
                     }
                     _ => {
-                        tokens.push(Token::new(TokenType::Less, c.to_string(), None));
+                        tokens.push(Token::new(
+                            TokenType::Less,
+                            c.to_string(),
+                            None,
+                            line_number,
+                        ));
                     }
                 },
                 ' ' | '\t' | '\r' => {}
@@ -140,7 +224,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             Some('"') => break,
                             Some(_) => str_value.push(value.unwrap()),
                             None => {
-                                ErrorT::new(line_number + 1, None).print_error_string();
+                                ErrorT::new(line_number, None).print_error_string();
                                 exit_code = 65;
                                 break 'line_loop;
                             }
@@ -150,6 +234,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         TokenType::String,
                         format!("\"{}\"", str_value),
                         str_value.into(),
+                        line_number,
                     ));
                 }
                 token if token.is_digit(10) => {
@@ -169,9 +254,14 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         }
                     }
 
-                    tokens.push(Token::parse_number(&num_value));
+                    tokens.push(Token::parse_number(&num_value, line_number));
                     if num_value.ends_with(".") {
-                        tokens.push(Token::new(TokenType::Dot, '.'.to_string(), None));
+                        tokens.push(Token::new(
+                            TokenType::Dot,
+                            '.'.to_string(),
+                            None,
+                            line_number,
+                        ));
                     }
                 }
                 token if token.is_alphanumeric() || token == '_' => {
@@ -185,10 +275,10 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         }
                     }
                     let token_type = TokenType::get_keyword_or_identifier(identifier.as_str());
-                    tokens.push(Token::new(token_type, identifier, None));
+                    tokens.push(Token::new(token_type, identifier, None, line_number));
                 }
                 _ => {
-                    ErrorT::new(line_number + 1, c.into()).print_error_line();
+                    ErrorT::new(line_number, c.into()).print_error_line();
                     // error.print_error_line();
                     exit_code = 65;
                 }
@@ -196,6 +286,6 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
         }
     }
 
-    tokens.push(Token::new(TokenType::Eof, "".to_string(), None));
+    tokens.push(Token::new(TokenType::Eof, "".to_string(), None, 0));
     (tokens, exit_code)
 }

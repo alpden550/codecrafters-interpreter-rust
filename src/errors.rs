@@ -20,4 +20,9 @@ impl ErrorT {
     pub fn print_error_string(&self) {
         eprintln!("[line {}] Error: Unterminated string.", self.line_number);
     }
+
+    pub fn error_brace(&self) -> String {
+        let msg = format!("[line {}] Expect ')' after expression.", self.line_number);
+        String::from(msg)
+    }
 }

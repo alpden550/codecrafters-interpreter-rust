@@ -1,3 +1,4 @@
+use crate::errors::ErrorT;
 use crate::parsers::expressions::{Expr, Literal};
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
@@ -24,7 +25,7 @@ impl<'a> Parser<'a> {
         while !self.is_at_end() {
             match self.expression() {
                 Ok(e) => self.exprs.push(e),
-                Err(_) => {}
+                Err(e) => eprintln!("{e}"),
             };
         }
     }
@@ -79,10 +80,10 @@ impl<'a> Parser<'a> {
             TokenType::LeftParen => {
                 let expr = self.expression()?;
                 if self.match_tokens(&[TokenType::RightParen]) {
-                    println!("expr={expr}");
                     Ok(Expr::Grouping(Box::new(expr)))
                 } else {
-                    Err("Expect ')' after expression.".to_string())
+                    let msg = ErrorT::new(self.previous().line_number, ')'.into()).error_brace();
+                    Err(msg)
                 }
             }
             _ => Err("Unexpected token type".to_string()),
