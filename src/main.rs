@@ -1,9 +1,8 @@
 mod errors;
-mod evaluator;
 mod parsers;
 mod tokens;
 
-use crate::evaluator::evaluate;
+use crate::parsers::parser::Parser;
 use crate::tokens::token::parse_tokens;
 use std::{
     env, fs,
@@ -25,9 +24,9 @@ fn main() {
         String::new()
     });
 
+    let (tokens, exit_code) = parse_tokens(&file_contents);
     match command.as_str() {
         "tokenize" => {
-            let (tokens, exit_code) = parse_tokens(&file_contents);
             for token in tokens {
                 println!("{}", token);
             }
@@ -35,14 +34,11 @@ fn main() {
                 exit(exit_code);
             }
         }
-        "evaluate" => {
-            let (tokens, exit_code) = parse_tokens(&file_contents);
-            if exit_code != 0 {
-                exit(exit_code);
-            }
-            let values = evaluate(&tokens);
-            for value in values {
-                println!("{}", value);
+        "parse" => {
+            let mut parser = Parser::new(&tokens);
+            parser.parse();
+            for expr in parser.exprs {
+                println!("{}", expr);
             }
         }
         _ => {

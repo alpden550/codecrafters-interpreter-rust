@@ -18,9 +18,6 @@ impl ErrorT {
     }
 
     pub fn print_error_string(&self) {
-        eprintln!(
-            "[line {}] Error: Unterminated string.",
-            self.line_number + 1
-        );
+        eprintln!("[line {}] Error: Unterminated string.", self.line_number);
     }
 }
