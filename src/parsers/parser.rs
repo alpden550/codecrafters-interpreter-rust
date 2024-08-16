@@ -64,7 +64,19 @@ impl<'a> Parser<'a> {
     }
 
     fn expression(&mut self) -> Result<Expr, String> {
-        self.comparison()
+        self.equality()
+    }
+
+    fn equality(&mut self) -> Result<Expr, String> {
+        let mut left = self.comparison()?;
+
+        while self.match_tokens(&[TokenType::BangEqual, TokenType::EqualEqual]) {
+            let operator = self.previous().clone();
+            let right = self.comparison()?;
+            left = Expr::Binary(Box::new(left), operator, Box::new(right))
+        }
+
+        Ok(left)
     }
 
     fn comparison(&mut self) -> Result<Expr, String> {
