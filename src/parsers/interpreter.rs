@@ -1,4 +1,4 @@
-use crate::parsers::expressions::{Expr, Literal};
+use crate::parsers::expressions::{Expr, Value};
 
 pub struct Interpreter {}
 
@@ -7,11 +7,11 @@ impl Interpreter {
         Interpreter {}
     }
 
-    pub fn evaluate(&self, expr: Expr) -> Result<Literal, String> {
+    pub fn evaluate(&self, expr: Expr) -> Result<Value, String> {
         match expr {
             Expr::Literal(l) => Ok(l),
             Expr::Grouping(expr) => self.evaluate(*expr),
-            _ => Ok(Literal::Nil),
+            _ => Ok(Value::Nil),
         }
     }
 }

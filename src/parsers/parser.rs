@@ -1,5 +1,5 @@
 use crate::errors::ErrorT;
-use crate::parsers::expressions::{Expr, Literal};
+use crate::parsers::expressions::{Expr, Value};
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
 use std::process::exit;
@@ -134,16 +134,16 @@ impl<'a> Parser<'a> {
     fn primary(&mut self) -> Result<Expr, String> {
         let token = self.advance();
         match token.token_type {
-            TokenType::Nil => Ok(Expr::Literal(Literal::Nil)),
-            TokenType::True => Ok(Expr::Literal(Literal::Bool(true))),
-            TokenType::False => Ok(Expr::Literal(Literal::Bool(false))),
+            TokenType::Nil => Ok(Expr::Literal(Value::Nil)),
+            TokenType::True => Ok(Expr::Literal(Value::Bool(true))),
+            TokenType::False => Ok(Expr::Literal(Value::Bool(false))),
             TokenType::String => {
                 let string = token.value.clone().unwrap();
-                Ok(Expr::Literal(Literal::String(string)))
+                Ok(Expr::Literal(Value::String(string)))
             }
             TokenType::Number => {
                 let number = token.value.clone().unwrap().parse().unwrap();
-                Ok(Expr::Literal(Literal::Number(number)))
+                Ok(Expr::Literal(Value::Number(number)))
             }
             TokenType::LeftParen => {
                 let expr = self.expression()?;
