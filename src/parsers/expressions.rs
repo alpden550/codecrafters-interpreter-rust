@@ -21,7 +21,6 @@ impl Display for Literal {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Expr {
     Literal(Literal),

@@ -2,6 +2,7 @@ mod errors;
 mod parsers;
 mod tokens;
 
+use crate::parsers::interpreter::Interpreter;
 use crate::parsers::parser::Parser;
 use crate::tokens::token::parse_tokens;
 use std::{
@@ -40,6 +41,15 @@ fn main() {
             parser.parse();
             for expr in parser.exprs {
                 println!("{}", expr);
+            }
+        }
+        "evaluate" => {
+            let mut parser = Parser::new(&tokens);
+            parser.parse();
+            let interpreter = Interpreter::new();
+            for expr in parser.exprs {
+                let value = interpreter.evaluate(expr).unwrap();
+                println!("{} {:?}", value, value);
             }
         }
         _ => {
