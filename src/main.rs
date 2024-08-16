@@ -26,10 +26,6 @@ fn main() {
     });
 
     let (tokens, exit_code) = parse_tokens(&file_contents);
-    if exit_code != 0 {
-        exit(exit_code);
-    }
-
     match command.as_str() {
         "tokenize" => {
             for token in tokens {
@@ -48,13 +44,20 @@ fn main() {
             parser.parse();
             let interpreter = Interpreter::new();
             for expr in parser.exprs {
-                let value = interpreter.evaluate(expr).unwrap();
-                println!("{} {:?}", value, value);
+                let value = interpreter.evaluate(expr);
+                match value {
+                    Ok(v) => println!("{v}"),
+                    Err(e) => eprintln!("{}", e),
+                }
             }
         }
         _ => {
             writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
             return;
         }
+    }
+
+    if exit_code != 0 {
+        exit(exit_code);
     }
 }
