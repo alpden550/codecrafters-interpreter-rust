@@ -64,7 +64,19 @@ impl<'a> Parser<'a> {
     }
 
     fn expression(&mut self) -> Result<Expr, String> {
-        self.factor()
+        self.term()
+    }
+
+    fn term(&mut self) -> Result<Expr, String> {
+        let mut left = self.factor()?;
+
+        while self.match_tokens(&[TokenType::Plus, TokenType::Minus]) {
+            let operator = self.previous().clone();
+            let right = self.factor()?;
+            left = Expr::Binary(Box::new(left), operator, Box::new(right))
+        }
+
+        Ok(left)
     }
 
     fn factor(&mut self) -> Result<Expr, String> {
