@@ -25,13 +25,14 @@ fn main() {
     });
 
     let (tokens, exit_code) = parse_tokens(&file_contents);
+    if exit_code != 0 {
+        exit(exit_code);
+    }
+
     match command.as_str() {
         "tokenize" => {
             for token in tokens {
                 println!("{}", token);
-            }
-            if exit_code != 0 {
-                exit(exit_code);
             }
         }
         "parse" => {

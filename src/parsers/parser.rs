@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
                 Ok(e) => self.exprs.push(e),
                 Err(e) => {
                     eprintln!("{e}");
-                    exit(65)
+                    exit(65);
                 }
             };
         }
@@ -150,11 +150,10 @@ impl<'a> Parser<'a> {
                 if self.match_tokens(&[TokenType::RightParen]) {
                     Ok(Expr::Grouping(Box::new(expr)))
                 } else {
-                    let msg = ErrorT::new(self.previous().line_number, ')'.into()).error_brace();
-                    Err(msg)
+                    Err(ErrorT::new(self.previous().line_number, ')'.into()).error_brace())
                 }
             }
-            _ => Err("Unexpected token type".to_string()),
+            _ => Err(ErrorT::new(self.previous().line_number, ')'.into()).error_expr()),
         }
     }
 }

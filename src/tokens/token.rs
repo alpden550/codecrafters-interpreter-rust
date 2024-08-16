@@ -279,7 +279,6 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                 }
                 _ => {
                     ErrorT::new(line_number, c.into()).print_error_line();
-                    // error.print_error_line();
                     exit_code = 65;
                 }
             }
