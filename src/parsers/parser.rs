@@ -64,16 +64,29 @@ impl<'a> Parser<'a> {
     }
 
     fn expression(&mut self) -> Result<Expr, String> {
-        self.unary()
+        self.factor()
+    }
+
+    fn factor(&mut self) -> Result<Expr, String> {
+        let mut left = self.unary()?;
+
+        while self.match_tokens(&[TokenType::Star, TokenType::Slash]) {
+            let operator = self.previous().clone();
+            let right = self.unary()?;
+            left = Expr::Binary(Box::new(left), operator, Box::new(right));
+        }
+
+        Ok(left)
     }
 
     fn unary(&mut self) -> Result<Expr, String> {
         if self.match_tokens(&[TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous().clone();
             let right = self.unary()?;
-            return Ok(Expr::Unary(operator, Box::new(right)));
+            Ok(Expr::Unary(operator, Box::new(right)))
+        } else {
+            self.primary()
         }
-        self.primary()
     }
 
     fn primary(&mut self) -> Result<Expr, String> {
