@@ -28,8 +28,8 @@ impl Interpreter {
             TokenType::Bang => match right {
                 Value::Nil => Ok(Value::Bool(true)),
                 Value::Bool(b) => Ok(Value::Bool(!b)),
-                Value::Number(_) => Ok(Value::Bool(false)),
-                _ => Err(format!("[line {}] invalid value for !", token.line_number)),
+                Value::Number(n) => Ok(Value::Bool(n == 0.0)),
+                Value::String(n) => Ok(Value::Bool(n.is_empty())),
             },
             _ => Ok(Value::Nil),
         }
