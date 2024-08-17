@@ -36,17 +36,10 @@ impl Interpreter {
     }
 
     fn visit_binary_expr(&self, left: Expr, token: Token, right: Expr) -> Result<Value, String> {
-        let left_expr = self.evaluate(left)?;
-        let right_expr = self.evaluate(right)?;
+        let left_expr = &self.evaluate(left)?;
+        let right_expr = &self.evaluate(right)?;
 
         match token.token_type {
-            TokenType::Minus => match (left_expr, right_expr) {
-                (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x - y)),
-                _ => Err(format!(
-                    "[line {}] invalid values, it must be numbers",
-                    token.line_number
-                )),
-            },
             TokenType::Slash => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x / y)),
                 _ => Err(format!(
@@ -59,6 +52,23 @@ impl Interpreter {
                 _ => Err(format!(
                     "[line {}] invalid values, it must be numbers",
                     token.line_number
+                )),
+            },
+            TokenType::Minus => match (left_expr, right_expr) {
+                (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x - y)),
+                _ => Err(format!(
+                    "[line {}] invalid values, it must be numbers",
+                    token.line_number
+                )),
+            },
+            TokenType::Plus => match (left_expr, right_expr) {
+                (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x + y)),
+                (Value::String(s1), Value::String(s2)) => Ok(Value::String(
+                    String::with_capacity(s1.len() + s2.len()) + &s1 + &s2,
+                )),
+                _ => Err(format!(
+                    "[line {}] invalid values '{}' '{}' for operation '{}'",
+                    token.line_number, left_expr, right_expr, token.name
                 )),
             },
             _ => Ok(Value::Nil),

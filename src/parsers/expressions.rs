@@ -2,7 +2,7 @@ use crate::tokens::token::Token;
 use std::fmt::{Display, Formatter};
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Value {
     Nil,
     Bool(bool),
