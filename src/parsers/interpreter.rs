@@ -103,6 +103,20 @@ impl Interpreter {
                     token.line_number, left_expr, right_expr, token.name
                 )),
             },
+            TokenType::EqualEqual => match (left_expr, right_expr) {
+                (Value::Number(x), Value::Number(y)) => Ok(Value::Bool(x == y)),
+                (Value::String(s1), Value::String(s2)) => Ok(Value::Bool(s1.clone() == s2.clone())),
+                (Value::Bool(b1), Value::Bool(b2)) => Ok(Value::Bool(b1 == b2)),
+                (Value::Nil, Value::Nil) => Ok(Value::Bool(true)),
+                _ => Ok(Value::Bool(false)),
+            },
+            TokenType::BangEqual => match (left_expr, right_expr) {
+                (Value::Number(x), Value::Number(y)) => Ok(Value::Bool(x != y)),
+                (Value::String(s1), Value::String(s2)) => Ok(Value::Bool(s1.clone() != s2.clone())),
+                (Value::Bool(b1), Value::Bool(b2)) => Ok(Value::Bool(b1 != b2)),
+                (Value::Nil, Value::Nil) => Ok(Value::Bool(false)),
+                _ => Ok(Value::Bool(true)),
+            },
             _ => Ok(Value::Nil),
         }
     }
