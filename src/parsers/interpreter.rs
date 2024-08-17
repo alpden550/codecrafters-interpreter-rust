@@ -46,21 +46,21 @@ impl Interpreter {
             TokenType::Slash => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x / y)),
                 _ => Err(format!(
-                    "[line {}] invalid values, it must be numbers",
+                    "Operands must be numbers.\n[line {}]",
                     token.line_number
                 )),
             },
             TokenType::Star => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x * y)),
                 _ => Err(format!(
-                    "[line {}] invalid values, it must be numbers",
+                    "Operands must be numbers.\n[line {}]",
                     token.line_number
                 )),
             },
             TokenType::Minus => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Number(x - y)),
                 _ => Err(format!(
-                    "[line {}] invalid values, it must be numbers",
+                    "Operands must be numbers.\n[line {}]",
                     token.line_number
                 )),
             },
