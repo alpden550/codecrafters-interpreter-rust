@@ -48,8 +48,8 @@ fn main() {
                 match value {
                     Ok(v) => println!("{v}"),
                     Err(e) => {
-                        eprintln!("{}", e);
-                        exit(65);
+                        eprintln!("{e}");
+                        exit(70);
                     }
                 }
             }

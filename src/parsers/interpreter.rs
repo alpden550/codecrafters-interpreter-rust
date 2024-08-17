@@ -23,7 +23,10 @@ impl Interpreter {
         match token.token_type {
             TokenType::Minus => match right {
                 Value::Number(n) => Ok(Value::Number(-n)),
-                _ => Err(format!("[line {}] invalid value for -", token.line_number)),
+                _ => Err(format!(
+                    "Operand must be a number.\n[line {}]",
+                    token.line_number
+                )),
             },
             TokenType::Bang => match right {
                 Value::Nil => Ok(Value::Bool(true)),
@@ -31,7 +34,7 @@ impl Interpreter {
                 Value::Number(n) => Ok(Value::Bool(n == 0.0)),
                 Value::String(n) => Ok(Value::Bool(n.is_empty())),
             },
-            _ => Ok(Value::Nil),
+            _ => Err(format!("[line {}] invalid value for -", token.line_number)),
         }
     }
 
