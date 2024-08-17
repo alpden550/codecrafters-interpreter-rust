@@ -47,7 +47,10 @@ fn main() {
                 let value = interpreter.evaluate(expr);
                 match value {
                     Ok(v) => println!("{v}"),
-                    Err(e) => eprintln!("{}", e),
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        exit(65);
+                    }
                 }
             }
         }
