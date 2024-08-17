@@ -70,8 +70,8 @@ impl Interpreter {
                     String::with_capacity(s1.len() + s2.len()) + &s1 + &s2,
                 )),
                 _ => Err(format!(
-                    "[line {}] invalid values '{}' '{}' for operation '{}'",
-                    token.line_number, left_expr, right_expr, token.name
+                    "Operands must be two numbers or two strings.\n[line {}]",
+                    token.line_number,
                 )),
             },
             TokenType::Greater => match (left_expr, right_expr) {
