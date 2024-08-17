@@ -78,32 +78,32 @@ impl Interpreter {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Bool(x > y)),
                 (Value::String(s1), Value::String(s2)) => Ok(Value::Bool(s1 > s2)),
                 _ => Err(format!(
-                    "[line {}] invalid values '{}' '{}' for operation '{}'",
-                    token.line_number, left_expr, right_expr, token.name
+                    "Operands must be numbers.\n[line {}]",
+                    token.line_number,
                 )),
             },
             TokenType::GreaterEqual => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Bool(x >= y)),
                 (Value::String(s1), Value::String(s2)) => Ok(Value::Bool(s1 >= s2)),
                 _ => Err(format!(
-                    "[line {}] invalid values '{}' '{}' for operation '{}'",
-                    token.line_number, left_expr, right_expr, token.name
+                    "Operands must be numbers.\n[line {}]",
+                    token.line_number,
                 )),
             },
             TokenType::Less => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Bool(x < y)),
                 (Value::String(s1), Value::String(s2)) => Ok(Value::Bool(s1 < s2)),
                 _ => Err(format!(
-                    "[line {}] invalid values '{}' '{}' for operation '{}'",
-                    token.line_number, left_expr, right_expr, token.name
+                    "Operands must be numbers.\n[line {}]",
+                    token.line_number,
                 )),
             },
             TokenType::LessEqual => match (left_expr, right_expr) {
                 (Value::Number(x), Value::Number(y)) => Ok(Value::Bool(x <= y)),
                 (Value::String(s1), Value::String(s2)) => Ok(Value::Bool(s1 <= s2)),
                 _ => Err(format!(
-                    "[line {}] invalid values '{}' '{}' for operation '{}'",
-                    token.line_number, left_expr, right_expr, token.name
+                    "Operands must be numbers.\n[line {}]",
+                    token.line_number,
                 )),
             },
             TokenType::EqualEqual => match (left_expr, right_expr) {
