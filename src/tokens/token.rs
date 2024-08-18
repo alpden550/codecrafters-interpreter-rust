@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use crate::errors::ErrorT;
 use crate::tokens::token_type::TokenType;
 use std::fmt::{Display, Formatter};
 
@@ -224,7 +223,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                             Some('"') => break,
                             Some(_) => str_value.push(value.unwrap()),
                             None => {
-                                ErrorT::new(line_number, None).print_error_string();
+                                eprintln!("[line {}] Error: Unterminated string.", line_number);
                                 exit_code = 65;
                                 break 'line_loop;
                             }
@@ -278,7 +277,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                     tokens.push(Token::new(token_type, identifier, None, line_number));
                 }
                 _ => {
-                    ErrorT::new(line_number, c.into()).print_error_line();
+                    eprintln!("[line {}] Error: Unexpected character: {}", line_number, c);
                     exit_code = 65;
                 }
             }

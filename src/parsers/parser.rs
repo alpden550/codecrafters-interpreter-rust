@@ -1,4 +1,4 @@
-use crate::errors::ErrorT;
+use crate::errors::ExitCode;
 use crate::parsers::expressions::{Expr, Value};
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
                 Ok(e) => self.exprs.push(e),
                 Err(e) => {
                     eprintln!("{e}");
-                    exit(65);
+                    exit(ExitCode::ExitError as i32);
                 }
             };
         }
@@ -150,10 +150,16 @@ impl<'a> Parser<'a> {
                 if self.match_tokens(&[TokenType::RightParen]) {
                     Ok(Expr::Grouping(Box::new(expr)))
                 } else {
-                    Err(ErrorT::new(self.previous().line_number, ')'.into()).error_brace())
+                    Err(format!(
+                        "[line {}] Expect ')' after expression.",
+                        self.previous().line_number
+                    ))
                 }
             }
-            _ => Err(ErrorT::new(self.previous().line_number, ')'.into()).error_expr()),
+            _ => Err(format!(
+                "[line {}] Error at ')': Expect expression.",
+                self.previous().line_number
+            )),
         }
     }
 }

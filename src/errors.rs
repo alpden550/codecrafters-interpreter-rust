@@ -1,36 +1,5 @@
 #[derive(Debug)]
-pub struct ErrorT {
-    line_number: usize,
-    token: Option<char>,
-}
-
-impl ErrorT {
-    pub fn new(line_number: usize, token: Option<char>) -> Self {
-        ErrorT { line_number, token }
-    }
-
-    pub fn print_error_line(&self) {
-        eprintln!(
-            "[line {}] Error: Unexpected character: {}",
-            self.line_number,
-            self.token.unwrap()
-        );
-    }
-
-    pub fn print_error_string(&self) {
-        eprintln!("[line {}] Error: Unterminated string.", self.line_number);
-    }
-
-    pub fn error_brace(&self) -> String {
-        let msg = format!("[line {}] Expect ')' after expression.", self.line_number);
-        String::from(msg)
-    }
-
-    pub fn error_expr(&self) -> String {
-        let msg = format!(
-            "[line {}] Error at ')': Expect expression.",
-            self.line_number
-        );
-        String::from(msg)
-    }
+pub enum ExitCode {
+    ExitError = 65,
+    RuntimeError = 70,
 }

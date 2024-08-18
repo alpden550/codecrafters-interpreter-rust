@@ -2,6 +2,7 @@ mod errors;
 mod parsers;
 mod tokens;
 
+use crate::errors::ExitCode;
 use crate::parsers::interpreter::Interpreter;
 use crate::parsers::parser::Parser;
 use crate::tokens::token::parse_tokens;
@@ -49,7 +50,7 @@ fn main() {
                     Ok(v) => println!("{v}"),
                     Err(e) => {
                         eprintln!("{e}");
-                        exit(70);
+                        exit(ExitCode::RuntimeError as i32);
                     }
                 }
             }
