@@ -1,12 +1,17 @@
-use crate::parsers::expressions::{Expr, Value};
+use crate::environments::Environment;
+use crate::parsers::expressions::{Expr, Stmt, Value};
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    pub environment: Environment,
+}
 
 impl Interpreter {
     pub fn new() -> Self {
-        Interpreter {}
+        Interpreter {
+            environment: Environment::new(),
+        }
     }
 
     pub fn evaluate(&self, expr: Expr) -> Result<Value, String> {
@@ -15,6 +20,15 @@ impl Interpreter {
             Expr::Grouping(expr) => self.evaluate(*expr),
             Expr::Unary(token, expr) => self.visit_unary_expr(token, *expr),
             Expr::Binary(left, token, right) => self.visit_binary_expr(*left, token, *right),
+            _ => Ok(Value::Nil),
+        }
+    }
+
+    pub fn interpret(&mut self, stmt: Stmt) {
+        match stmt {
+            Stmt::Print(e) => self.visit_print_stmt(e),
+            Stmt::Variable(t, e) => self.visit_var_stmt(t, e),
+            Stmt::Expression(_) => {}
         }
     }
 
@@ -121,6 +135,27 @@ impl Interpreter {
                 _ => Ok(Value::Bool(true)),
             },
             _ => Ok(Value::Nil),
+        }
+    }
+
+    fn visit_print_stmt(&self, expr: Expr) {
+        let value = self.evaluate(expr).unwrap_or(Value::Nil);
+        println!("{value}");
+    }
+
+    fn visit_var_stmt(&mut self, token: Token, expr: Expr) {
+        let name = token.name;
+        match expr {
+            Expr::Assign(_, e) => {
+                let value = self.evaluate(*e).unwrap();
+                match value {
+                    Value::String(s) => self.environment.insert_text(name, s),
+                    Value::Number(n) => self.environment.insert_number(name, n),
+                    Value::Bool(b) => self.environment.insert_bool(name, b),
+                    _ => {}
+                }
+            }
+            _ => {}
         }
     }
 }
