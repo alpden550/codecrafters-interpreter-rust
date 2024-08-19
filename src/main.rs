@@ -1,3 +1,4 @@
+mod environments;
 mod errors;
 mod parsers;
 mod tokens;
@@ -42,7 +43,8 @@ fn main() {
         }
         "evaluate" => {
             let mut parser = Parser::new(&tokens);
-            parser.parse();
+            parser.parse_stmts();
+
             let interpreter = Interpreter::new();
             for expr in parser.exprs {
                 let value = interpreter.evaluate(expr);
@@ -54,6 +56,16 @@ fn main() {
                     }
                 }
             }
+        }
+        "execute" => {
+            let mut parser = Parser::new(&tokens);
+            parser.parse_stmts();
+
+            let mut interpreter = Interpreter::new();
+            for stmt in parser.stmts {
+                interpreter.interpret(stmt);
+            }
+            println!("{}", interpreter.environment);
         }
         _ => {
             writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
