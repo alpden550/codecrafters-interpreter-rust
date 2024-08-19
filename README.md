@@ -17,8 +17,10 @@ Your lox file contains:
 ```
 
 ```bash
-sh./your_program.sh tokenize file.lox
+./your_program.sh tokenize file.lox
 ```
+
+## Parse
 
 ```bash
 ./your_program.sh parse file.lox
@@ -31,6 +33,8 @@ Output:
 (* 2.0 (group (/ 3.0 (- muffin))))
 ```
 
+## Evaluate
+
 ```bash
 ./your_program.sh evaluate file.lox
 ```
@@ -41,5 +45,30 @@ Output:
 false
 Operand must be a number.
 [line 2]
+```
 
+## Execute
+
+Your lox file contains:
+
+```file.lox
+print "hello, Lox!";
+var new = (119 * 23 - (14 -5));
+var two = "string";
+var three = 3 + 1 * 1000;
+var bool = 3 == 3;
+```
+
+```bash
+ ./your_program.sh execute file.lox
+```
+
+and output:
+
+```bash
+hello, Lox!
+two=string
+new=2728
+bool=true
+three=1003
 ```
