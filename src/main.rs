@@ -33,4 +33,10 @@ fn main() {
 
     let mut parser = Parser::new(&tokens);
     parser.parse();
+    if !parser.errors.is_empty() {
+        for error in parser.errors {
+            eprintln!("{error}");
+        }
+        exit(ExitCode::ExitError as i32);
+    }
 }

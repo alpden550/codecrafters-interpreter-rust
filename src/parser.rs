@@ -1,14 +1,13 @@
-use crate::errors::ExitCode;
 use crate::models::expression::Expr;
 use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
-use std::process::exit;
 
 #[allow(dead_code)]
 pub struct Parser<'a> {
     pub tokens: &'a [Token],
     pub exprs: Vec<Expr>,
+    pub errors: Vec<String>,
     current: usize,
 }
 
@@ -18,6 +17,7 @@ impl<'a> Parser<'a> {
             tokens,
             current: 0,
             exprs: Vec::new(),
+            errors: Vec::new(),
         }
     }
 
@@ -25,10 +25,7 @@ impl<'a> Parser<'a> {
         while !self.is_at_end() {
             match self.expression() {
                 Ok(e) => println!("{}", e),
-                Err(e) => {
-                    eprintln!("{e}");
-                    exit(ExitCode::RuntimeError as i32)
-                }
+                Err(e) => self.errors.push(e),
             }
         }
     }
