@@ -169,6 +169,13 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Grouping(Box::new(expr)));
         }
 
+        if self.matches(&[TokenType::RightParen]) {
+            return Err(format!(
+                "[line {}] found not expected ')'",
+                self.previous().line_number
+            ));
+        }
+
         Err("Expect expression.".to_string())
     }
 
