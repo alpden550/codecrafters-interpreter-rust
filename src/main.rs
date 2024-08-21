@@ -1,9 +1,11 @@
 mod environments;
 mod errors;
 mod models;
+mod parser;
 mod scanner;
 
 use crate::errors::ExitCode;
+use crate::parser::Parser;
 use crate::scanner::parse_tokens;
 use std::{
     env, fs,
@@ -25,11 +27,10 @@ fn main() {
     });
 
     let (tokens, exit_code) = parse_tokens(&file_contents);
-    for token in tokens {
-        println!("{}", token);
-    }
-
     if exit_code != 0 {
         exit(exit_code);
     }
+
+    let mut parser = Parser::new(&tokens);
+    parser.parse();
 }

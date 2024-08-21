@@ -18,3 +18,19 @@ impl Display for Value {
         }
     }
 }
+
+impl Value {
+    pub fn get_string(&self) -> Option<String> {
+        match self {
+            Self::String(s) => s.clone().into(),
+            _ => None,
+        }
+    }
+
+    pub fn get_number(&self) -> Option<f64> {
+        match self {
+            Self::Number(f) => (*f).into(),
+            _ => None,
+        }
+    }
+}
