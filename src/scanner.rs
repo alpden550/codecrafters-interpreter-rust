@@ -1,61 +1,6 @@
-#![allow(dead_code)]
-
-use crate::tokens::token_type::TokenType;
-use std::fmt::{Display, Formatter};
-
-#[derive(Debug, Clone)]
-pub struct Token {
-    pub token_type: TokenType,
-    pub name: String,
-    pub value: Option<String>,
-    pub line_number: usize,
-}
-
-impl Token {
-    pub fn new(
-        token_type: TokenType,
-        name: String,
-        value: Option<String>,
-        line_number: usize,
-    ) -> Self {
-        Token {
-            token_type,
-            name,
-            value,
-            line_number,
-        }
-    }
-
-    fn parse_number(raw_value: &String, line_number: usize) -> Self {
-        let mut name = String::from(raw_value);
-        let mut value = String::from(raw_value);
-        if raw_value.ends_with(".") {
-            name = name.replace(".", "");
-            value.push('0');
-        } else if !raw_value.contains(".") {
-            value.push('.');
-            value.push('0');
-        }
-
-        if value.ends_with("00") {
-            value.pop();
-        }
-
-        Token::new(TokenType::Number, name, value.into(), line_number)
-    }
-}
-
-impl Display for Token {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{} {} {}",
-            self.token_type,
-            self.name,
-            self.value.clone().unwrap_or(String::from("null")),
-        )
-    }
-}
+use crate::models::token_types::TokenType;
+use crate::models::tokens::Token;
+use crate::models::values::Value;
 
 pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
     let mut exit_code = 0;
@@ -71,56 +16,61 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                 '(' => tokens.push(Token::new(
                     TokenType::LeftParen,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 ')' => tokens.push(Token::new(
                     TokenType::RightParen,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 '{' => tokens.push(Token::new(
                     TokenType::LeftBrace,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 '}' => tokens.push(Token::new(
                     TokenType::RightBrace,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 ',' => tokens.push(Token::new(
                     TokenType::Comma,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
-                '.' => tokens.push(Token::new(TokenType::Dot, c.to_string(), None, line_number)),
+                '.' => tokens.push(Token::new(
+                    TokenType::Dot,
+                    c.to_string(),
+                    Value::Nil,
+                    line_number,
+                )),
                 '-' => tokens.push(Token::new(
                     TokenType::Minus,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 '+' => tokens.push(Token::new(
                     TokenType::Plus,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 ';' => tokens.push(Token::new(
                     TokenType::Semicolon,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 '*' => tokens.push(Token::new(
                     TokenType::Star,
                     c.to_string(),
-                    None,
+                    Value::Nil,
                     line_number,
                 )),
                 '/' => match chars.peek() {
@@ -130,7 +80,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                     _ => tokens.push(Token::new(
                         TokenType::Slash,
                         c.to_string(),
-                        None,
+                        Value::Nil,
                         line_number,
                     )),
                 },
@@ -141,7 +91,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::BangEqual,
                             formatted.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -149,7 +99,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::Bang,
                             c.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -161,7 +111,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::EqualEqual,
                             formatted.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -169,7 +119,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::Equal,
                             c.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -181,7 +131,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::GreaterEqual,
                             formatted.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -189,7 +139,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::Greater,
                             c.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -201,7 +151,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::LessEqual,
                             formatted.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -209,7 +159,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         tokens.push(Token::new(
                             TokenType::Less,
                             c.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -232,7 +182,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                     tokens.push(Token::new(
                         TokenType::String,
                         format!("\"{}\"", str_value),
-                        str_value.into(),
+                        Value::String(str_value),
                         line_number,
                     ));
                 }
@@ -253,12 +203,18 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         }
                     }
 
-                    tokens.push(Token::parse_number(&num_value, line_number));
+                    let number: f64 = num_value.clone().parse().unwrap();
+                    tokens.push(Token::new(
+                        TokenType::Number,
+                        number.to_string(),
+                        Value::Number(number),
+                        line_number,
+                    ));
                     if num_value.ends_with(".") {
                         tokens.push(Token::new(
                             TokenType::Dot,
                             '.'.to_string(),
-                            None,
+                            Value::Nil,
                             line_number,
                         ));
                     }
@@ -274,7 +230,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                         }
                     }
                     let token_type = TokenType::get_keyword_or_identifier(identifier.as_str());
-                    tokens.push(Token::new(token_type, identifier, None, line_number));
+                    tokens.push(Token::new(token_type, identifier, Value::Nil, line_number));
                 }
                 _ => {
                     eprintln!("[line {}] Error: Unexpected character: {}", line_number, c);
@@ -284,6 +240,6 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
         }
     }
 
-    tokens.push(Token::new(TokenType::Eof, "".to_string(), None, 0));
+    tokens.push(Token::new(TokenType::Eof, "".to_string(), Value::Nil, 0));
     (tokens, exit_code)
 }

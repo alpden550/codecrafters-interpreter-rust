@@ -1,7 +1,8 @@
-use crate::parsers::expressions::Value;
+use crate::models::values::Value;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Environment {
     pub values: HashMap<String, Value>,
@@ -16,6 +17,7 @@ impl Display for Environment {
     }
 }
 
+#[allow(dead_code)]
 impl Environment {
     pub fn new() -> Self {
         Environment {

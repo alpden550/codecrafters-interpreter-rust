@@ -1,12 +1,10 @@
 mod environments;
 mod errors;
-mod parsers;
-mod tokens;
+mod models;
+mod scanner;
 
 use crate::errors::ExitCode;
-use crate::parsers::interpreter::Interpreter;
-use crate::parsers::parser::Parser;
-use crate::tokens::token::parse_tokens;
+use crate::scanner::parse_tokens;
 use std::{
     env, fs,
     io::{self, Write},
@@ -15,62 +13,20 @@ use std::{
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 3 {
+    if args.len() < 2 {
         writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
-        return;
+        exit(ExitCode::ExitError as i32);
     }
 
-    let command = &args[1];
-    let filename = &args[2];
+    let filename = &args[1];
     let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
         writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-        String::new()
+        exit(ExitCode::ExitError as i32);
     });
 
     let (tokens, exit_code) = parse_tokens(&file_contents);
-    match command.as_str() {
-        "tokenize" => {
-            for token in tokens {
-                println!("{}", token);
-            }
-        }
-        "parse" => {
-            let mut parser = Parser::new(&tokens);
-            parser.parse();
-            for expr in parser.exprs {
-                println!("{}", expr);
-            }
-        }
-        "evaluate" => {
-            let mut parser = Parser::new(&tokens);
-            parser.parse_stmts();
-
-            let interpreter = Interpreter::new();
-            for expr in parser.exprs {
-                let value = interpreter.evaluate(expr);
-                match value {
-                    Ok(v) => println!("{v}"),
-                    Err(e) => {
-                        eprintln!("{e}");
-                        exit(ExitCode::RuntimeError as i32);
-                    }
-                }
-            }
-        }
-        "execute" => {
-            let mut parser = Parser::new(&tokens);
-            parser.parse_stmts();
-
-            let mut interpreter = Interpreter::new();
-            for stmt in parser.stmts {
-                interpreter.interpret(stmt);
-            }
-            println!("{}", interpreter.environment);
-        }
-        _ => {
-            writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-            return;
-        }
+    for token in tokens {
+        println!("{}", token);
     }
 
     if exit_code != 0 {
