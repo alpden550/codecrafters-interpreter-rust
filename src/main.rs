@@ -33,6 +33,9 @@ fn main() {
 
     let mut parser = Parser::new(&tokens);
     parser.parse();
+    for expr in parser.exprs {
+        println!("{expr}");
+    }
     if !parser.errors.is_empty() {
         for error in parser.errors {
             eprintln!("{error}");

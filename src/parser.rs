@@ -3,7 +3,6 @@ use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
 
-#[allow(dead_code)]
 pub struct Parser<'a> {
     pub tokens: &'a [Token],
     pub exprs: Vec<Expr>,
@@ -24,7 +23,7 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) {
         while !self.is_at_end() {
             match self.expression() {
-                Ok(e) => println!("{}", e),
+                Ok(e) => self.exprs.push(e),
                 Err(e) => self.errors.push(e),
             }
         }
@@ -170,6 +169,32 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Grouping(Box::new(expr)));
         }
 
-        Err("Unknown literal".to_string())
+        Err("Expect expression.".to_string())
+    }
+
+    #[allow(dead_code)]
+    fn synchronize(&mut self) {
+        self.advance();
+
+        while !self.is_at_end() {
+            if self.previous().token_type == TokenType::Semicolon {
+                return;
+            }
+            let switched = [
+                TokenType::Class,
+                TokenType::Fun,
+                TokenType::Var,
+                TokenType::For,
+                TokenType::If,
+                TokenType::While,
+                TokenType::Print,
+                TokenType::Return,
+            ];
+            if switched.contains(&self.peek().token_type) {
+                return;
+            }
+
+            self.advance();
+        }
     }
 }
