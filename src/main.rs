@@ -38,7 +38,7 @@ fn main() {
 
     let interpreter = Interpreter::new();
     for expr in parser.exprs {
-        let value = interpreter.evaluate(expr);
+        let value = interpreter.interpret(expr);
         match value {
             Ok(v) => println!("{v}"),
             Err(e) => eprintln!("{e}"),
@@ -49,6 +49,6 @@ fn main() {
         for error in parser.errors {
             eprintln!("{error}");
         }
-        exit(ExitCode::ExitError as i32);
+        exit(ExitCode::RuntimeError as i32);
     }
 }

@@ -10,7 +10,11 @@ impl Interpreter {
         Interpreter {}
     }
 
-    pub fn evaluate(&self, expr: Expr) -> Result<Value, String> {
+    pub fn interpret(&self, expr: Expr) -> Result<Value, String> {
+        self.evaluate(expr)
+    }
+
+    fn evaluate(&self, expr: Expr) -> Result<Value, String> {
         match expr {
             Expr::Literal(v) => Ok(v),
             Expr::Grouping(e) => self.evaluate(*e),
