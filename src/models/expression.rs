@@ -21,3 +21,8 @@ impl Display for Expr {
         }
     }
 }
+
+impl Expr {
+    #[allow(dead_code)]
+    pub fn accept(&self) {}
+}

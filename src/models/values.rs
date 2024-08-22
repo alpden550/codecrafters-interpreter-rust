@@ -33,4 +33,23 @@ impl Value {
             _ => None,
         }
     }
+
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            Self::Nil => false,
+            Self::Bool(b) => *b == true,
+            Self::String(s) => !s.is_empty(),
+            Self::Number(n) => *n != 0.0,
+        }
+    }
+
+    pub fn is_equal(&self, other: Self) -> bool {
+        match (self, other) {
+            (Self::Nil, Value::Nil) => true,
+            (Self::Bool(l), Value::Bool(r)) => *l == r,
+            (Self::Number(l), Value::Number(r)) => *l == r,
+            (Self::String(l), Value::String(r)) => *l == r,
+            _ => false,
+        }
+    }
 }

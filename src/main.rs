@@ -1,10 +1,12 @@
 mod environments;
 mod errors;
+mod interpreter;
 mod models;
 mod parser;
 mod scanner;
 
 use crate::errors::ExitCode;
+use crate::interpreter::Interpreter;
 use crate::parser::Parser;
 use crate::scanner::parse_tokens;
 use std::{
@@ -33,9 +35,16 @@ fn main() {
 
     let mut parser = Parser::new(&tokens);
     parser.parse();
+
+    let interpreter = Interpreter::new();
     for expr in parser.exprs {
-        println!("{expr}");
+        let value = interpreter.evaluate(expr);
+        match value {
+            Ok(v) => println!("{v}"),
+            Err(e) => eprintln!("{e}"),
+        }
     }
+
     if !parser.errors.is_empty() {
         for error in parser.errors {
             eprintln!("{error}");
