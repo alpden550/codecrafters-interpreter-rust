@@ -3,7 +3,7 @@ use crate::models::values::Value;
 use std::fmt::{Display, Formatter};
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Literal(Value),
     Unary(Token, Box<Expr>),
