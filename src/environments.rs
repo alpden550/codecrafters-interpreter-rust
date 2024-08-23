@@ -25,16 +25,8 @@ impl Environment {
         }
     }
 
-    pub fn insert_number(&mut self, key: String, value: f64) {
-        self.values.insert(key, Value::Number(value));
-    }
-
-    pub fn insert_text(&mut self, key: String, value: String) {
-        self.values.insert(key, Value::String(value));
-    }
-
-    pub fn insert_bool(&mut self, key: String, value: bool) {
-        self.values.insert(key, Value::Bool(value));
+    pub fn insert(&mut self, key: String, value: Value) {
+        self.values.insert(key, value);
     }
 
     #[allow(dead_code)]
