@@ -36,14 +36,8 @@ fn main() {
     let mut parser = Parser::new(&tokens);
     parser.parse();
 
-    let interpreter = Interpreter::new();
-    for expr in parser.exprs {
-        let value = interpreter.interpret(expr);
-        match value {
-            Ok(v) => println!("{v}"),
-            Err(e) => eprintln!("{e}"),
-        }
-    }
+    let mut interpreter = Interpreter::new();
+    interpreter.interpret(&parser.stmts);
 
     if !parser.errors.is_empty() {
         for error in parser.errors {
