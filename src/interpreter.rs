@@ -1,29 +1,71 @@
+use crate::environments::Environment;
 use crate::models::expressions::Expr;
+use crate::models::statements::Stmt;
 use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    environment: Environment,
+}
 
 impl Interpreter {
     pub fn new() -> Self {
-        Interpreter {}
-    }
-
-    pub fn interpret(&self, expr: Expr) -> Result<Value, String> {
-        self.evaluate(expr)
-    }
-
-    fn evaluate(&self, expr: Expr) -> Result<Value, String> {
-        match expr {
-            Expr::Literal(v) => Ok(v),
-            Expr::Grouping(e) => self.evaluate(*e),
-            Expr::Unary(t, e) => self.visit_unary_expr(t, *e),
-            Expr::Binary(l, t, r) => self.visit_binary_expr(*l, t, *r),
+        Interpreter {
+            environment: Environment::new(),
         }
     }
 
-    fn visit_unary_expr(&self, token: Token, expr: Expr) -> Result<Value, String> {
+    pub fn interpret(&mut self, stmts: &[Stmt]) {
+        for stmt in stmts {
+            match self.execute(stmt) {
+                Ok(_) => {}
+                Err(e) => eprintln!("{e}"),
+            }
+        }
+    }
+
+    fn execute(&mut self, stmt: &Stmt) -> Result<(), String> {
+        self.visit_stmt(stmt)
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt) -> Result<(), String> {
+        match stmt {
+            Stmt::Expression(e) => {
+                self.evaluate(e)?;
+                Ok(())
+            }
+            Stmt::Print(e) => {
+                let value = self.evaluate(e)?;
+                println!("{value}");
+                Ok(())
+            }
+            Stmt::Var(t, e) => {
+                let mut value = Value::Nil;
+                match e {
+                    Some(e) => {
+                        value = self.evaluate(e)?;
+                    }
+                    None => {}
+                }
+                self.environment.insert(t.clone().name, value);
+                Ok(())
+            }
+        }
+    }
+
+    fn evaluate(&mut self, expr: &Expr) -> Result<Value, String> {
+        match expr {
+            Expr::Literal(v) => Ok(v.clone()),
+            Expr::Grouping(e) => self.evaluate(e),
+            Expr::Unary(t, e) => self.visit_unary_expr(t, e),
+            Expr::Binary(l, t, r) => self.visit_binary_expr(l, t, r),
+            Expr::Variable(t) => self.visit_variable_expr(t),
+            Expr::Assign(t, e) => self.visit_assign_expr(t, e),
+        }
+    }
+
+    fn visit_unary_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
         let right = self.evaluate(expr)?;
 
         match token.token_type {
@@ -45,11 +87,27 @@ impl Interpreter {
         }
     }
 
+    fn visit_variable_expr(&self, token: &Token) -> Result<Value, String> {
+        let value = self.environment.get(token.name.as_str());
+        match value {
+            Some(v) => Ok(v.clone()),
+            None => Err("Not founded".to_string()),
+        }
+    }
+
+    fn visit_assign_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
+        let value = self.evaluate(expr)?;
+
+        self.environment.insert(token.clone().name, value.clone());
+
+        Ok(value)
+    }
+
     fn visit_binary_expr(
-        &self,
-        left_expr: Expr,
-        token: Token,
-        right_expr: Expr,
+        &mut self,
+        left_expr: &Expr,
+        token: &Token,
+        right_expr: &Expr,
     ) -> Result<Value, String> {
         let left = self.evaluate(left_expr)?;
         let right = self.evaluate(right_expr)?;
