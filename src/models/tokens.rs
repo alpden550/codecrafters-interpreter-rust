@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::models::token_types::TokenType;
 use crate::models::values::Value;
 use std::fmt::{Display, Formatter};
