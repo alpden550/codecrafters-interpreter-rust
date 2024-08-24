@@ -1,11 +1,12 @@
 use crate::models::expressions::Expr;
+use crate::models::statements::Stmt;
 use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
 
 pub struct Parser<'a> {
     pub tokens: &'a [Token],
-    pub exprs: Vec<Expr>,
+    pub stmts: Vec<Stmt>,
     pub errors: Vec<String>,
     current: usize,
 }
@@ -15,15 +16,15 @@ impl<'a> Parser<'a> {
         Parser {
             tokens,
             current: 0,
-            exprs: Vec::new(),
+            stmts: Vec::new(),
             errors: Vec::new(),
         }
     }
 
     pub fn parse(&mut self) {
         while !self.is_at_end() {
-            match self.expression() {
-                Ok(e) => self.exprs.push(e),
+            match self.declaration() {
+                Ok(e) => self.stmts.push(e),
                 Err(e) => self.errors.push(e),
             }
         }
@@ -72,8 +73,80 @@ impl<'a> Parser<'a> {
         Err(format!("[line {}] {}", self.previous().line_number, msg))
     }
 
+    fn declaration(&mut self) -> Result<Stmt, String> {
+        let mut res = self.statement();
+        if self.matches(&[TokenType::Var]) {
+            res = self.var_declaration();
+        }
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => {
+                self.synchronize();
+                Err(e)
+            }
+        }
+    }
+
+    fn var_declaration(&mut self) -> Result<Stmt, String> {
+        self.consume(TokenType::Identifier, "Expect variable name.")?;
+        let token = self.previous().clone();
+        let mut initializer = None;
+
+        if self.matches(&[TokenType::Equal]) {
+            initializer = Some(self.expression()?);
+        }
+
+        self.consume(
+            TokenType::Semicolon,
+            "Expect ';' after variable declaration.",
+        )?;
+
+        Ok(Stmt::Var(token.clone(), initializer))
+    }
+
+    fn statement(&mut self) -> Result<Stmt, String> {
+        if self.matches(&[TokenType::Print]) {
+            return self.print_statement();
+        }
+
+        self.expression_statement()
+    }
+
+    fn print_statement(&mut self) -> Result<Stmt, String> {
+        let expr = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
+
+        Ok(Stmt::Print(expr))
+    }
+
+    fn expression_statement(&mut self) -> Result<Stmt, String> {
+        let expr = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
+
+        Ok(Stmt::Expression(expr))
+    }
+
     fn expression(&mut self) -> Result<Expr, String> {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expr, String> {
+        let expr = self.equality()?;
+
+        if self.matches(&[TokenType::Equal]) {
+            let token_equal = self.previous().clone();
+            let assignment = self.assignment()?;
+            return match expr {
+                Expr::Variable(t) => Ok(Expr::Assign(t, Box::new(assignment))),
+                _ => Err(format!(
+                    "[line {}] Invalid assignment target.",
+                    token_equal.line_number
+                )),
+            };
+        }
+
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expr, String> {
@@ -176,10 +249,13 @@ impl<'a> Parser<'a> {
             ));
         }
 
+        if self.matches(&[TokenType::Identifier]) {
+            return Ok(Expr::Variable(self.previous().clone()));
+        }
+
         Err("Expect expression.".to_string())
     }
 
-    #[allow(dead_code)]
     fn synchronize(&mut self) {
         self.advance();
 
