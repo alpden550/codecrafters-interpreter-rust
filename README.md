@@ -7,7 +7,7 @@ Lox is an imperative, dynamically typed scripting language.
 This code follows the book
 [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom.
 
-## Evaluate implementation
+## State and statements implementation
 
 ```bash
 ./your_program.sh file.lox
@@ -16,17 +16,18 @@ This code follows the book
 Your lox file contains:
 
 ```file.lox
-1 - (2 * 3) < 4 == false
-2 * (3 / -"muffin")
-(119 * 23 - (14 -5))
-"string" + " " + "string"
+var a = (1234 * (1456/ 44 + (1987 - 264)) / 34);
+var b = true;
+b = false;
+print a;
+print b != true;
+print a == 63735.77005347593;
 ```
 
 Output:
 
 ```bash
-false
-[line 2] Not a number for MINUS operation.
-2728
-string string
+63735.77005347593
+true
+true
 ```
