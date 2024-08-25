@@ -7,7 +7,7 @@ Lox is an imperative, dynamically typed scripting language.
 This code follows the book
 [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom.
 
-## State, statements and global and local scopes implementation
+## Implement if condition flow
 
 ```bash
 ./your_program.sh file.lox
@@ -45,6 +45,9 @@ print c;
 }
 print calculated;
 print is_true;
+
+if (!nil) {print true;} else {print false;}
+if (nil) {print true;} else {print false;}
 ```
 
 Output:
@@ -64,4 +67,6 @@ true
 true
 [line 28] Not founded value in the scopes for variable calculated
 [line 29] Not founded value in the scopes for variable is_true
+Not None
+None
 ```
