@@ -39,6 +39,7 @@ impl<'a> Interpreter<'a> {
                 self.evaluate(e)?;
                 Ok(())
             }
+            Stmt::If(c, eb, tb) => self.visit_if_stmt(c, eb, tb),
             Stmt::Print(e) => {
                 let value = self.evaluate(e)?;
                 println!("{value}");
@@ -82,6 +83,26 @@ impl<'a> Interpreter<'a> {
             Expr::Variable(t) => self.visit_variable_expr(t),
             Expr::Assign(t, e) => self.visit_assign_expr(t, e),
         }
+    }
+
+    fn visit_if_stmt(
+        &mut self,
+        condition: &Expr,
+        then_branch: &Box<Stmt>,
+        else_branch: &Option<Box<Stmt>>,
+    ) -> Result<(), String> {
+        if self.evaluate(condition)?.is_truthy() {
+            return self.execute(then_branch);
+        }
+
+        match else_branch {
+            None => {}
+            Some(s) => {
+                return self.execute(s);
+            }
+        }
+
+        Ok(())
     }
 
     fn visit_unary_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
