@@ -5,22 +5,26 @@ use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
 
-pub struct Interpreter {
+pub struct Interpreter<'a> {
     environment: Environment,
+    pub stmts: &'a [Stmt],
+    pub errors: Vec<String>,
 }
 
-impl Interpreter {
-    pub fn new() -> Self {
+impl<'a> Interpreter<'a> {
+    pub fn new(stmts: &'a [Stmt]) -> Self {
         Interpreter {
             environment: Environment::new(),
+            stmts,
+            errors: Vec::new(),
         }
     }
 
-    pub fn interpret(&mut self, stmts: &[Stmt]) {
-        for stmt in stmts {
+    pub fn interpret(&mut self) {
+        for stmt in self.stmts {
             match self.execute(stmt) {
                 Ok(_) => {}
-                Err(e) => eprintln!("{e}"),
+                Err(e) => self.errors.push(e),
             }
         }
     }
@@ -51,7 +55,22 @@ impl Interpreter {
                 self.environment.insert(t.clone().name, value);
                 Ok(())
             }
+            Stmt::Block(s) => Ok(self.execute_block(s, Environment::new())),
         }
+    }
+
+    fn execute_block(&mut self, stmts: &[Stmt], env: Environment) {
+        let previous = &self.environment.enclosing.take();
+        self.environment.enclosing = Some(Box::new(env));
+
+        for stmt in stmts {
+            match self.execute(stmt) {
+                Ok(_) => {}
+                Err(e) => self.errors.push(e),
+            }
+        }
+
+        self.environment.enclosing = previous.clone();
     }
 
     fn evaluate(&mut self, expr: &Expr) -> Result<Value, String> {
@@ -91,7 +110,10 @@ impl Interpreter {
         let value = self.environment.get(token.name.as_str());
         match value {
             Some(v) => Ok(v.clone()),
-            None => Err("Not founded".to_string()),
+            None => Err(format!(
+                "[line {}] Not founded value in the scopes for variable {}",
+                token.line_number, token.name
+            )),
         }
     }
 
