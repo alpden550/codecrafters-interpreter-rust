@@ -35,12 +35,17 @@ fn main() {
 
     let mut parser = Parser::new(&tokens);
     parser.parse();
-
-    let mut interpreter = Interpreter::new();
-    interpreter.interpret(&parser.stmts);
-
     if !parser.errors.is_empty() {
         for error in parser.errors {
+            eprintln!("{error}");
+        }
+        exit(ExitCode::RuntimeError as i32);
+    }
+
+    let mut interpreter = Interpreter::new(&parser.stmts);
+    interpreter.interpret();
+    if !interpreter.errors.is_empty() {
+        for error in interpreter.errors {
             eprintln!("{error}");
         }
         exit(ExitCode::RuntimeError as i32);
