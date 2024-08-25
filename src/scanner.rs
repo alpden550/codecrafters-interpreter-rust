@@ -1,3 +1,4 @@
+use crate::errors::ExitCode;
 use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
@@ -234,7 +235,7 @@ pub fn parse_tokens(file_contents: &String) -> (Vec<Token>, i32) {
                 }
                 _ => {
                     eprintln!("[line {}] Error: Unexpected character: {}", line_number, c);
-                    exit_code = 65;
+                    exit_code = ExitCode::ExitError as i32;
                 }
             }
         }
