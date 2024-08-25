@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
 pub enum Stmt {
+    Block(Box<Vec<Stmt>>),
     Print(Expr),
     Expression(Expr),
     Var(Token, Option<Expr>),
@@ -15,6 +16,7 @@ impl Display for Stmt {
             Self::Print(e) => write!(f, "Print {e}"),
             Self::Expression(e) => write!(f, "Expression {e}"),
             Self::Var(t, e) => write!(f, "Variable {t} for {:?}", e),
+            Self::Block(s) => write!(f, "Block for {:?}", s),
         }
     }
 }
