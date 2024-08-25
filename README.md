@@ -46,8 +46,8 @@ print c;
 print calculated;
 print is_true;
 
-if (!nil) {print true;} else {print false;}
-if (nil) {print true;} else {print false;}
+if (!nil) {print "Not None";} else {print "None";}
+if (nil) {print "Not None";} else {print "None";}
 ```
 
 Output:
