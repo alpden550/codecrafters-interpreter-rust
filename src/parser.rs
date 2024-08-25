@@ -288,7 +288,10 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Variable(self.previous().clone()));
         }
 
-        Err("Expect expression.".to_string())
+        Err(format!(
+            "[line {}] Expect expression.",
+            self.peek().line_number
+        ))
     }
 
     fn synchronize(&mut self) {
