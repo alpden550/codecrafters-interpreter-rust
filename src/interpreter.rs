@@ -60,31 +60,6 @@ impl<'a> Interpreter<'a> {
         }
     }
 
-    fn execute_block(&mut self, stmts: &[Stmt], env: Environment) {
-        let previous = &self.environment.enclosing.take();
-        self.environment.enclosing = Some(Box::new(env));
-
-        for stmt in stmts {
-            match self.execute(stmt) {
-                Ok(_) => {}
-                Err(e) => self.errors.push(e),
-            }
-        }
-
-        self.environment.enclosing = previous.clone();
-    }
-
-    fn evaluate(&mut self, expr: &Expr) -> Result<Value, String> {
-        match expr {
-            Expr::Literal(v) => Ok(v.clone()),
-            Expr::Grouping(e) => self.evaluate(e),
-            Expr::Unary(t, e) => self.visit_unary_expr(t, e),
-            Expr::Binary(l, t, r) => self.visit_binary_expr(l, t, r),
-            Expr::Variable(t) => self.visit_variable_expr(t),
-            Expr::Assign(t, e) => self.visit_assign_expr(t, e),
-        }
-    }
-
     fn visit_if_stmt(
         &mut self,
         condition: &Expr,
@@ -103,6 +78,53 @@ impl<'a> Interpreter<'a> {
         }
 
         Ok(())
+    }
+
+    fn execute_block(&mut self, stmts: &[Stmt], env: Environment) {
+        let previous = &self.environment.enclosing.take();
+        self.environment.enclosing = Some(Box::new(env));
+
+        for stmt in stmts {
+            match self.execute(stmt) {
+                Ok(_) => {}
+                Err(e) => self.errors.push(e),
+            }
+        }
+
+        self.environment.enclosing = previous.clone();
+    }
+
+    fn evaluate(&mut self, expr: &Expr) -> Result<Value, String> {
+        match expr {
+            Expr::Literal(v) => Ok(v.clone()),
+            Expr::Logical(l, t, r) => self.visit_logical_expr(l, t, r),
+            Expr::Grouping(e) => self.evaluate(e),
+            Expr::Unary(t, e) => self.visit_unary_expr(t, e),
+            Expr::Binary(l, t, r) => self.visit_binary_expr(l, t, r),
+            Expr::Variable(t) => self.visit_variable_expr(t),
+            Expr::Assign(t, e) => self.visit_assign_expr(t, e),
+        }
+    }
+
+    fn visit_logical_expr(
+        &mut self,
+        left: &Expr,
+        token: &Token,
+        right: &Expr,
+    ) -> Result<Value, String> {
+        let left_value = self.evaluate(left)?;
+
+        if token.token_type == TokenType::Or {
+            if left_value.is_truthy() {
+                return Ok(left_value);
+            }
+        } else {
+            if !left_value.is_truthy() {
+                return Ok(left_value);
+            }
+        }
+
+        self.evaluate(right)
     }
 
     fn visit_unary_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
