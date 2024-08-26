@@ -167,7 +167,7 @@ impl<'a> Parser<'a> {
     }
 
     fn assignment(&mut self) -> Result<Expr, String> {
-        let expr = self.equality()?;
+        let expr = self.logic_or()?;
 
         if self.matches(&[TokenType::Equal]) {
             let token_equal = self.previous().clone();
@@ -182,6 +182,30 @@ impl<'a> Parser<'a> {
         }
 
         Ok(expr)
+    }
+
+    fn logic_or(&mut self) -> Result<Expr, String> {
+        let left = self.logic_and()?;
+
+        while self.matches(&[TokenType::Or]) {
+            let operator = self.previous().clone();
+            let right = self.logic_and()?;
+            return Ok(Expr::Logical(Box::new(left), operator, Box::new(right)));
+        }
+
+        Ok(left)
+    }
+
+    fn logic_and(&mut self) -> Result<Expr, String> {
+        let left = self.equality()?;
+
+        while self.matches(&[TokenType::And]) {
+            let operator = self.previous().clone();
+            let right = self.equality()?;
+            return Ok(Expr::Logical(Box::new(left), operator, Box::new(right)));
+        }
+
+        Ok(left)
     }
 
     fn equality(&mut self) -> Result<Expr, String> {
