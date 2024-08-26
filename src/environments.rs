@@ -26,6 +26,11 @@ impl Environment {
     }
 
     pub fn insert(&mut self, key: String, value: Value) {
+        if self.values.contains_key(&key) {
+            self.values.insert(key, value);
+            return;
+        }
+
         if let Some(ref mut e) = self.enclosing {
             e.insert(key, value);
             return;
