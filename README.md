@@ -7,7 +7,12 @@ Lox is an imperative, dynamically typed scripting language.
 This code follows the book
 [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom.
 
-## Implement if condition flow
+## Implemented:
+
+- Scanning file and parsing into tokens;
+- Parsing and evaluate expressions;
+- Statements and state, Global and local scopes;
+- Control Flow: Conditional Execution (if statement)
 
 ```bash
 ./your_program.sh file.lox
@@ -28,7 +33,7 @@ var c = "global c";
             print b;
             print c;
         }
-    print a;
+    print a;im
     print b;
     print c;
 }
