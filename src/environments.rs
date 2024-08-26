@@ -39,6 +39,10 @@ impl Environment {
     }
 
     pub fn get(&self, key: &str) -> Option<&Value> {
+        if self.values.contains_key(key) {
+            return self.values.get(key);
+        }
+
         if let Some(ref e) = self.enclosing {
             match e.get(key) {
                 Some(v) => Some(v),

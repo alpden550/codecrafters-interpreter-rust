@@ -5,6 +5,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug, Clone)]
 pub enum Expr {
     Literal(Value),
+    Logical(Box<Expr>, Token, Box<Expr>),
     Unary(Token, Box<Expr>),
     Variable(Token),
     Binary(Box<Expr>, Token, Box<Expr>),
@@ -16,11 +17,12 @@ impl Display for Expr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Literal(v) => write!(f, "{v}"),
-            Self::Grouping(e) => write!(f, "(group {e})"),
+            Self::Logical(l, o, r) => write!(f, "({l} {o} {r})"),
             Self::Unary(t, e) => write!(f, "({} {e})", t.name),
             Self::Variable(t) => write!(f, "(variable {t})"),
-            Self::Assign(t, e) => write!(f, "({} {e})", t.name),
             Self::Binary(l, o, r) => write!(f, "({} {l} {r})", o.name),
+            Self::Assign(t, e) => write!(f, "({} {e})", t.name),
+            Self::Grouping(e) => write!(f, "(group {e})"),
         }
     }
 }
