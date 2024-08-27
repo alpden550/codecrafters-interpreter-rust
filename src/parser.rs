@@ -131,9 +131,22 @@ impl<'a> Parser<'a> {
         let condition = self.expression()?;
         self.consume(TokenType::RightParen, "Expect ')' after 'if' condition.")?;
 
+        if self.peek().token_type != TokenType::LeftBrace {
+            return Err(format!(
+                "[line {}] Expect {{ before if body",
+                self.peek().line_number
+            ));
+        }
         let then_branch = self.statement()?;
+
         let mut else_branch = None;
         if self.matches(&[TokenType::Else]) {
+            if self.peek().token_type != TokenType::LeftBrace {
+                return Err(format!(
+                    "[line {}] Expect {{ before else body",
+                    self.peek().line_number
+                ));
+            }
             let e = self.statement()?;
             else_branch = Some(Box::new(e));
         }
@@ -152,6 +165,13 @@ impl<'a> Parser<'a> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'while'.")?;
         let condition = self.expression()?;
         self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+
+        if self.peek().token_type != TokenType::LeftBrace {
+            return Err(format!(
+                "[line {}] Expect {{ before while body",
+                self.peek().line_number
+            ));
+        }
 
         let body = self.statement()?;
         Ok(Stmt::While(condition, Box::new(body)))
