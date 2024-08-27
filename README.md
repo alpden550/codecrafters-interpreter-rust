@@ -51,9 +51,6 @@ print c;
 print calculated;
 print is_true;
 
-if (!nil) {print "Not None";} else {print "None";}
-if (nil) {print "Not None";} else {print "None";}
-
 print "hi" or 2; // "hi".
 print nil or "yes"; // "yes"
 print 1 and 0; // 0
@@ -61,7 +58,8 @@ print 1 and 1; // 1
 
 var condition = 0;
 while (condition <= 5) {
-    print condition; condition = condition + 1;
+    print condition;
+    condition = condition + 1;
 }
 ```
 
