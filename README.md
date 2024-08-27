@@ -12,7 +12,7 @@ This code follows the book
 - Scanning file and parsing into tokens;
 - Parsing and evaluate expressions;
 - Statements and state, Global and local scopes;
-- Control Flow: Conditional Execution (if statement), Logical Operators(and, or)
+- Control Flow: Conditional Execution (if statement), Logical Operators(and, or), While Loops
 
 ```bash
 ./your_program.sh file.lox
@@ -58,6 +58,11 @@ print "hi" or 2; // "hi".
 print nil or "yes"; // "yes"
 print 1 and 0; // 0
 print 1 and 1; // 1
+
+var condition = 0;
+while (condition <= 5) {
+    print condition; condition = condition + 1;
+}
 ```
 
 Output:
@@ -81,6 +86,13 @@ hi
 yes
 0
 1
+
+0
+1
+2
+3
+4
+5
 [line 28] Not founded value in the scopes for variable calculated
 [line 29] Not founded value in the scopes for variable is_true
 ```
