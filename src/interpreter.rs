@@ -56,6 +56,7 @@ impl<'a> Interpreter<'a> {
                 self.environment.insert(t.clone().name, value);
                 Ok(())
             }
+            Stmt::While(e, s) => self.visit_while_stmt(e, s),
             Stmt::Block(s) => Ok(self.execute_block(s, Environment::new())),
         }
     }
@@ -75,6 +76,14 @@ impl<'a> Interpreter<'a> {
             Some(s) => {
                 return self.execute(s);
             }
+        }
+
+        Ok(())
+    }
+
+    fn visit_while_stmt(&mut self, condition: &Expr, body: &Stmt) -> Result<(), String> {
+        while self.evaluate(condition)?.is_truthy() {
+            self.execute(body)?;
         }
 
         Ok(())
