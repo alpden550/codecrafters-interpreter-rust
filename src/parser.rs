@@ -114,6 +114,10 @@ impl<'a> Parser<'a> {
             return self.print_statement();
         }
 
+        if self.matches(&[TokenType::While]) {
+            return self.while_statement();
+        }
+
         if self.matches(&[TokenType::LeftBrace]) {
             let stmts = self.block()?;
             return Ok(Stmt::Block(Box::new(stmts)));
@@ -142,6 +146,15 @@ impl<'a> Parser<'a> {
         self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
 
         Ok(Stmt::Print(expr))
+    }
+
+    fn while_statement(&mut self) -> Result<Stmt, String> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'while'.")?;
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+
+        let body = self.statement()?;
+        Ok(Stmt::While(condition, Box::new(body)))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, String> {
