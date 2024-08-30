@@ -14,7 +14,7 @@ pub struct Interpreter<'a> {
 impl<'a> Interpreter<'a> {
     pub fn new(stmts: &'a [Stmt]) -> Self {
         Interpreter {
-            environment: Environment::new(),
+            environment: Environment::new(None),
             stmts,
             errors: Vec::new(),
         }
@@ -53,11 +53,11 @@ impl<'a> Interpreter<'a> {
                     }
                     None => {}
                 }
-                self.environment.insert(t.clone().name, value);
+                self.environment.define(t.clone().name, value);
                 Ok(())
             }
             Stmt::While(e, s) => self.visit_while_stmt(e, s),
-            Stmt::Block(s) => Ok(self.execute_block(s, Environment::new())),
+            Stmt::Block(s) => Ok(self.execute_block(s)),
         }
     }
 
@@ -89,9 +89,9 @@ impl<'a> Interpreter<'a> {
         Ok(())
     }
 
-    fn execute_block(&mut self, stmts: &[Stmt], env: Environment) {
-        let previous = &self.environment.enclosing.take();
-        self.environment.enclosing = Some(Box::new(env));
+    fn execute_block(&mut self, stmts: &[Stmt]) {
+        let previous = self.environment.clone();
+        self.environment = Environment::new(Some(Box::new(previous)));
 
         for stmt in stmts {
             match self.execute(stmt) {
@@ -99,8 +99,7 @@ impl<'a> Interpreter<'a> {
                 Err(e) => self.errors.push(e),
             }
         }
-
-        self.environment.enclosing = previous.clone();
+        self.environment = *self.environment.enclosing.take().unwrap();
     }
 
     fn evaluate(&mut self, expr: &Expr) -> Result<Value, String> {
@@ -159,22 +158,12 @@ impl<'a> Interpreter<'a> {
     }
 
     fn visit_variable_expr(&self, token: &Token) -> Result<Value, String> {
-        let value = self.environment.get(token.name.as_str());
-        match value {
-            Some(v) => Ok(v.clone()),
-            None => Err(format!(
-                "[line {}] Not founded value in the scopes for variable {}",
-                token.line_number, token.name
-            )),
-        }
+        self.environment.get(token)
     }
 
     fn visit_assign_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
         let value = self.evaluate(expr)?;
-
-        self.environment.insert(token.clone().name, value.clone());
-
-        Ok(value)
+        self.environment.assign(token, value.clone())
     }
 
     fn visit_binary_expr(
