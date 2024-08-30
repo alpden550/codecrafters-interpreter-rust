@@ -1,4 +1,6 @@
 use crate::models::values::Value;
+
+use crate::models::tokens::Token;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
@@ -8,7 +10,7 @@ pub struct Environment {
     pub values: HashMap<String, Value>,
 }
 
-impl Display for Environment {
+impl<'a> Display for Environment {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         for (key, value) in &self.values {
             writeln!(f, "{key}={value}")?;
@@ -18,38 +20,41 @@ impl Display for Environment {
 }
 
 impl Environment {
-    pub fn new() -> Self {
-        Environment {
-            enclosing: None,
+    pub fn new(enclosing: Option<Box<Environment>>) -> Self {
+        Self {
+            enclosing,
             values: HashMap::new(),
         }
     }
 
-    pub fn insert(&mut self, key: String, value: Value) {
-        if self.values.contains_key(&key) {
-            self.values.insert(key, value);
-            return;
-        }
-
-        if let Some(ref mut e) = self.enclosing {
-            e.insert(key, value);
-            return;
-        }
-        self.values.insert(key, value);
+    pub fn define(&mut self, name: String, value: Value) {
+        self.values.insert(name, value);
     }
 
-    pub fn get(&self, key: &str) -> Option<&Value> {
-        if self.values.contains_key(key) {
-            return self.values.get(key);
-        }
-
-        if let Some(ref e) = self.enclosing {
-            match e.get(key) {
-                Some(v) => Some(v),
-                None => self.values.get(key),
-            }
+    pub fn assign(&mut self, token: &Token, value: Value) -> Result<Value, String> {
+        if self.values.contains_key(token.name.as_str()) {
+            self.values.insert(token.name.clone(), value.clone());
+            Ok(value)
+        } else if let Some(ref mut enclosing) = self.enclosing {
+            enclosing.assign(token, value)
         } else {
-            self.values.get(key)
+            Err(format!(
+                "[line {}] Undefined variable '{}'.",
+                token.line_number, token.name
+            ))
+        }
+    }
+
+    pub fn get(&self, token: &Token) -> Result<Value, String> {
+        if let Some(value) = self.values.get(token.name.as_str()) {
+            Ok(value.clone())
+        } else if let Some(ref enclosing) = self.enclosing {
+            enclosing.get(token)
+        } else {
+            Err(format!(
+                "[line {}] Undefined variable '{}'.",
+                token.line_number, token.name
+            ))
         }
     }
 }
