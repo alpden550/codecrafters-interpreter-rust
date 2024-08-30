@@ -12,7 +12,7 @@ This code follows the book
 - Scanning file and parsing into tokens;
 - Parsing and evaluate expressions;
 - Statements and state, Global and local scopes;
-- Control Flow: Conditional Execution (if statement), Logical Operators(and, or), While Loops
+- Control Flow: Conditional Execution (if statement), Logical Operators(and, or), While Loops, For Loop
 
 ```bash
 ./your_program.sh file.lox
@@ -61,6 +61,11 @@ while (condition <= 5) {
     print condition;
     condition = condition + 1;
 }
+
+for (var i = 0; i < 3; i = i + 1) {
+    print i;
+}
+print i;
 ```
 
 Output:
@@ -69,28 +74,28 @@ Output:
 inner a
 outer b
 global c
-inner a
+outer a
 outer b
 global c
-inner a
-outer b
+global a
+global b
 global c
 63735.77005347593
 true
 true
-Not None
-None
 hi
 yes
 0
-1
-
 0
 1
 2
 3
 4
 5
-[line 28] Not founded value in the scopes for variable calculated
-[line 29] Not founded value in the scopes for variable is_true
+0
+1
+2
+[line 28] Undefined variable 'calculated'.
+[line 29] Undefined variable 'is_true'.
+[line 45] Undefined variable 'i'.
 ```
