@@ -1,6 +1,5 @@
-use crate::fixtures::create_temp_file_with_content;
+use crate::fixtures::interpret_temp_file_with_content;
 use std::io;
-use std::process::Command;
 
 mod fixtures;
 
@@ -11,14 +10,7 @@ fn test_if_condition_error_without_paren() -> io::Result<()> {
         print "Not none";
     }
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
-
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 [line 1] Expect '(' after 'if'.
 [line 3] Expect expression.
@@ -39,14 +31,7 @@ fn test_if_condition_error_without_brace() -> io::Result<()> {
     if (true == !nil) 
         print "Not none";
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
-
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 [line 2] Expect { before if body
     "#;
@@ -67,14 +52,7 @@ fn test_if_condition_success() -> io::Result<()> {
         print "Not none";
     }
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
-
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 Not none
     "#;
@@ -96,13 +74,7 @@ fn test_logical_operators_success() -> io::Result<()> {
     print 1 and 0;
     print 1 and 1;
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 hi
 yes
@@ -128,13 +100,7 @@ fn test_while_loop_success() -> io::Result<()> {
         condition = condition + 1;
     }
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 0
 1
@@ -160,13 +126,7 @@ fn test_for_loop_success() -> io::Result<()> {
         print i;
     }
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 0
 1
@@ -190,13 +150,7 @@ fn test_for_loop_error() -> io::Result<()> {
     }
     print i;
     "#;
-    let tmp_file = create_temp_file_with_content(content.trim())?;
-    let filepath = tmp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filepath)
-        .output()?;
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 [line 4] Undefined variable 'i'.
     "#;

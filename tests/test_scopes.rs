@@ -1,6 +1,5 @@
-use crate::fixtures::create_temp_file_with_content;
+use crate::fixtures::interpret_temp_file_with_content;
 use std::io;
-use std::process::Command;
 
 mod fixtures;
 
@@ -27,14 +26,7 @@ fn test_global_scopes() -> io::Result<()> {
         print b;
         print c;
     "#;
-    let temp_file = create_temp_file_with_content(content.trim())?;
-    let filename = temp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filename)
-        .output()?;
-
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected_stdout = r#"
 inner a
 outer b
@@ -71,14 +63,7 @@ fn test_error_after_local_scope() -> io::Result<()> {
     print is_true;
     "#;
 
-    let temp_file = create_temp_file_with_content(content.trim())?;
-    let filename = temp_file.path();
-
-    let output = Command::new("bash")
-        .arg("your_program.sh")
-        .arg(filename)
-        .output()?;
-
+    let output = interpret_temp_file_with_content(content.trim())?;
     let expected = r#"
 [line 8] Undefined variable 'calculated'.
 [line 9] Undefined variable 'is_true'.
