@@ -27,7 +27,7 @@ fn test_global_scopes() -> io::Result<()> {
         print b;
         print c;
     "#;
-    let temp_file = create_temp_file_with_content(content)?;
+    let temp_file = create_temp_file_with_content(content.trim())?;
     let filename = temp_file.path();
 
     let output = Command::new("bash")
