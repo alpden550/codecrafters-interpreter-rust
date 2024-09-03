@@ -74,9 +74,12 @@ impl<'a> Parser<'a> {
     }
 
     fn declaration(&mut self) -> Result<Stmt, String> {
-        let mut res = self.statement();
+        let res;
+
         if self.matches(&[TokenType::Var]) {
             res = self.var_declaration();
+        } else {
+            res = self.statement();
         }
 
         match res {
@@ -201,7 +204,6 @@ impl<'a> Parser<'a> {
     fn print_statement(&mut self) -> Result<Stmt, String> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
-
         Ok(Stmt::Print(expr))
     }
 
