@@ -1,20 +1,32 @@
 use crate::environments::Environment;
 use crate::models::expressions::Expr;
+use crate::models::lox_func::LoxFunction;
 use crate::models::statements::Stmt;
 use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
+use crate::native_funcs::clock_func::ClockFunction;
+use std::sync::Arc;
 
+#[allow(dead_code)]
 pub struct Interpreter<'a> {
-    environment: Environment,
+    pub globals: Environment,
+    pub environment: Environment,
     pub stmts: &'a [Stmt],
     pub errors: Vec<String>,
 }
 
 impl<'a> Interpreter<'a> {
     pub fn new(stmts: &'a [Stmt]) -> Self {
+        let mut globals = Environment::new(None);
+        globals.define(
+            ClockFunction.to_string(),
+            Value::Callable(Arc::new(ClockFunction)),
+        );
+
         Interpreter {
-            environment: Environment::new(None),
+            globals: globals.clone(),
+            environment: globals,
             stmts,
             errors: Vec::new(),
         }
@@ -39,6 +51,7 @@ impl<'a> Interpreter<'a> {
                 self.evaluate(e)?;
                 Ok(())
             }
+            Stmt::Function(name, params, body) => self.visit_function_stmt(name, params, body),
             Stmt::If(c, eb, tb) => self.visit_if_stmt(c, eb, tb),
             Stmt::Print(e) => {
                 let value = self.evaluate(e)?;
@@ -57,8 +70,31 @@ impl<'a> Interpreter<'a> {
                 Ok(())
             }
             Stmt::While(e, s) => self.visit_while_stmt(e, s),
-            Stmt::Block(s) => Ok(self.execute_block(s)),
+            Stmt::Block(s) => {
+                // let previous = self.environment.clone();
+                // let env = Environment::new(Some(Box::new(previous)));
+                Ok(self.execute_block(
+                    s,
+                    Environment::new(Some(Box::new(self.environment.clone()))),
+                ))
+            }
         }
+    }
+
+    fn visit_function_stmt(
+        &mut self,
+        token: &Token,
+        params: &[Token],
+        body: &[Stmt],
+    ) -> Result<(), String> {
+        let func = Value::Callable(Arc::new(LoxFunction::new(
+            token.clone(),
+            Vec::from(params),
+            Vec::from(body),
+        )));
+        self.environment.define(token.name.clone(), func); // use globals
+
+        Ok(())
     }
 
     fn visit_if_stmt(
@@ -89,9 +125,8 @@ impl<'a> Interpreter<'a> {
         Ok(())
     }
 
-    fn execute_block(&mut self, stmts: &[Stmt]) {
-        let previous = self.environment.clone();
-        self.environment = Environment::new(Some(Box::new(previous)));
+    pub fn execute_block(&mut self, stmts: &[Stmt], env: Environment) {
+        self.environment = env;
 
         for stmt in stmts {
             match self.execute(stmt) {
@@ -110,6 +145,7 @@ impl<'a> Interpreter<'a> {
             Expr::Unary(t, e) => self.visit_unary_expr(t, e),
             Expr::Binary(l, t, r) => self.visit_binary_expr(l, t, r),
             Expr::Variable(t) => self.visit_variable_expr(t),
+            Expr::Call(callee, paren, args) => self.visit_call_expr(callee, paren, args),
             Expr::Assign(t, e) => self.visit_assign_expr(t, e),
         }
     }
@@ -243,6 +279,37 @@ impl<'a> Interpreter<'a> {
                 "[line {}] Invalid operation {} for binary expression.",
                 token.line_number, token.token_type
             )),
+        }
+    }
+
+    fn visit_call_expr(
+        &mut self,
+        callee: &Expr,
+        paren: &Token,
+        args: &Vec<Expr>,
+    ) -> Result<Value, String> {
+        let callee_func = self.evaluate(callee)?;
+        let mut arguments = Vec::new();
+        for arg in args {
+            arguments.push(self.evaluate(arg)?);
+        }
+
+        if let Some(func) = callee_func.is_callable() {
+            if args.len() != func.arity() {
+                return Err(format!(
+                    "[line {}] Expected {} arguments, but got {}.",
+                    paren.line_number,
+                    func.arity(),
+                    args.len()
+                ));
+            }
+
+            func.call(self, &arguments)
+        } else {
+            Err(format!(
+                "[line {}] Can only call functions and classes.",
+                paren.line_number
+            ))
         }
     }
 }
