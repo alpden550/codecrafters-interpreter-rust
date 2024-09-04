@@ -76,7 +76,9 @@ impl<'a> Parser<'a> {
     fn declaration(&mut self) -> Result<Stmt, String> {
         let res;
 
-        if self.matches(&[TokenType::Var]) {
+        if self.matches(&[TokenType::Fun]) {
+            res = self.function("function");
+        } else if self.matches(&[TokenType::Var]) {
             res = self.var_declaration();
         } else {
             res = self.statement();
@@ -89,6 +91,40 @@ impl<'a> Parser<'a> {
                 Err(e)
             }
         }
+    }
+
+    fn function(&mut self, kind: &str) -> Result<Stmt, String> {
+        self.consume(
+            TokenType::Identifier,
+            format!("Expect {} name.", kind).as_str(),
+        )?;
+        let name = self.previous().clone();
+        self.consume(
+            TokenType::LeftParen,
+            format!("Expect '(' after {} name.", kind).as_str(),
+        )?;
+
+        let mut parameters = vec![];
+        if !self.check(&TokenType::RightParen) {
+            loop {
+                self.consume(TokenType::Identifier, "Expect parameter name.")?;
+                let param = self.previous().clone();
+                parameters.push(param);
+                if !self.matches(&[TokenType::Comma]) {
+                    break;
+                }
+            }
+        }
+
+        self.consume(TokenType::RightParen, "Expect ')' after parameters.")?;
+        self.consume(
+            TokenType::LeftBrace,
+            format!("Expect '{{' before {} body.", kind).as_str(),
+        )?;
+
+        let body = self.block()?;
+        let func = Stmt::Function(name.clone(), parameters, Box::new(body));
+        Ok(func)
     }
 
     fn var_declaration(&mut self) -> Result<Stmt, String> {
@@ -348,7 +384,43 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Unary(operator, Box::new(right)));
         }
 
-        self.primary()
+        self.call()
+    }
+
+    fn call(&mut self) -> Result<Expr, String> {
+        let mut expr = self.primary()?;
+
+        loop {
+            if self.matches(&[TokenType::LeftParen]) {
+                expr = self.finish_call(expr)?;
+            } else {
+                break;
+            }
+        }
+
+        Ok(expr)
+    }
+
+    fn finish_call(&mut self, callee: Expr) -> Result<Expr, String> {
+        let mut arguments = vec![];
+
+        if !self.check(&TokenType::RightParen) {
+            arguments.push(self.expression()?);
+            while self.matches(&[TokenType::Comma]) {
+                if arguments.len() >= 255 {
+                    return Err(format!(
+                        "[line {}] Can't have more than 255 arguments.",
+                        self.peek().line_number
+                    ));
+                }
+
+                arguments.push(self.expression()?)
+            }
+        }
+
+        let paren = self.consume(TokenType::RightParen, "Expect ')' after arguments.")?;
+        let func = Expr::Call(Box::new(callee), paren.clone(), Box::new(arguments));
+        Ok(func)
     }
 
     fn primary(&mut self) -> Result<Expr, String> {
