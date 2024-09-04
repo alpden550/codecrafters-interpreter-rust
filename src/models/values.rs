@@ -1,4 +1,6 @@
+use crate::models::callable::Callable;
 use std::fmt::{Display, Formatter};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -6,6 +8,7 @@ pub enum Value {
     Bool(bool),
     String(String),
     Number(f64),
+    Callable(Arc<dyn Callable>),
 }
 
 impl Display for Value {
@@ -15,6 +18,7 @@ impl Display for Value {
             Self::Bool(b) => write!(f, "{b}"),
             Self::String(s) => write!(f, "{s}"),
             Self::Number(n) => write!(f, "{n}"),
+            Self::Callable(c) => write!(f, "<fn {}>", c.to_string()),
         }
     }
 }
@@ -40,6 +44,7 @@ impl Value {
             Self::Bool(b) => *b == true,
             Self::String(s) => !s.is_empty(),
             Self::Number(n) => *n != 0.0,
+            _ => false,
         }
     }
 
@@ -50,6 +55,13 @@ impl Value {
             (Self::Number(l), Value::Number(r)) => *l == r,
             (Self::String(l), Value::String(r)) => *l == r,
             _ => false,
+        }
+    }
+
+    pub fn is_callable(&self) -> Option<&Arc<dyn Callable>> {
+        match self {
+            Self::Callable(f) => Some(f),
+            _ => None,
         }
     }
 }
