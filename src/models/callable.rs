@@ -1,3 +1,4 @@
+use crate::errors::ValueError;
 use crate::interpreter::Interpreter;
 use crate::models::values::Value;
 use std::fmt::Debug;
@@ -6,5 +7,5 @@ use std::fmt::Debug;
 pub trait Callable: Debug + Send + Sync {
     fn to_string(&self) -> &str;
     fn arity(&self) -> usize;
-    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value, String>;
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value, ValueError>;
 }
