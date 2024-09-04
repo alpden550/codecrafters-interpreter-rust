@@ -1,4 +1,5 @@
 use crate::environments::Environment;
+use crate::errors::ValueError;
 use crate::models::expressions::Expr;
 use crate::models::lox_func::LoxFunction;
 use crate::models::statements::Stmt;
@@ -36,16 +37,19 @@ impl<'a> Interpreter<'a> {
         for stmt in self.stmts {
             match self.execute(stmt) {
                 Ok(_) => {}
-                Err(e) => self.errors.push(e),
+                Err(e) => match e {
+                    ValueError::Error(m) => self.errors.push(m),
+                    ValueError::Return(_) => {}
+                },
             }
         }
     }
 
-    fn execute(&mut self, stmt: &Stmt) -> Result<(), String> {
+    fn execute(&mut self, stmt: &Stmt) -> Result<(), ValueError> {
         self.visit_stmt(stmt)
     }
 
-    fn visit_stmt(&mut self, stmt: &Stmt) -> Result<(), String> {
+    fn visit_stmt(&mut self, stmt: &Stmt) -> Result<(), ValueError> {
         match stmt {
             Stmt::Expression(e) => {
                 self.evaluate(e)?;
@@ -58,6 +62,7 @@ impl<'a> Interpreter<'a> {
                 println!("{value}");
                 Ok(())
             }
+            Stmt::Return(_keyword, value) => self.visit_return_stmt(value),
             Stmt::Var(t, e) => {
                 let mut value = Value::Nil;
                 match e {
@@ -73,10 +78,10 @@ impl<'a> Interpreter<'a> {
             Stmt::Block(s) => {
                 // let previous = self.environment.clone();
                 // let env = Environment::new(Some(Box::new(previous)));
-                Ok(self.execute_block(
+                self.execute_block(
                     s,
                     Environment::new(Some(Box::new(self.environment.clone()))),
-                ))
+                )
             }
         }
     }
@@ -86,7 +91,7 @@ impl<'a> Interpreter<'a> {
         token: &Token,
         params: &[Token],
         body: &[Stmt],
-    ) -> Result<(), String> {
+    ) -> Result<(), ValueError> {
         let func = Value::Callable(Arc::new(LoxFunction::new(
             token.clone(),
             Vec::from(params),
@@ -102,7 +107,7 @@ impl<'a> Interpreter<'a> {
         condition: &Expr,
         then_branch: &Box<Stmt>,
         else_branch: &Option<Box<Stmt>>,
-    ) -> Result<(), String> {
+    ) -> Result<(), ValueError> {
         if self.evaluate(condition)?.is_truthy() {
             return self.execute(then_branch);
         }
@@ -117,7 +122,17 @@ impl<'a> Interpreter<'a> {
         Ok(())
     }
 
-    fn visit_while_stmt(&mut self, condition: &Expr, body: &Stmt) -> Result<(), String> {
+    fn visit_return_stmt(&mut self, value: &Option<Expr>) -> Result<(), ValueError> {
+        match value {
+            None => Ok(()),
+            Some(e) => {
+                let ret = self.evaluate(e)?;
+                Err(ValueError::Return(ret))
+            }
+        }
+    }
+
+    fn visit_while_stmt(&mut self, condition: &Expr, body: &Stmt) -> Result<(), ValueError> {
         while self.evaluate(condition)?.is_truthy() {
             self.execute(body)?;
         }
@@ -125,19 +140,26 @@ impl<'a> Interpreter<'a> {
         Ok(())
     }
 
-    pub fn execute_block(&mut self, stmts: &[Stmt], env: Environment) {
+    pub fn execute_block(&mut self, stmts: &[Stmt], env: Environment) -> Result<(), ValueError> {
         self.environment = env;
 
         for stmt in stmts {
             match self.execute(stmt) {
                 Ok(_) => {}
-                Err(e) => self.errors.push(e),
+                Err(error) => match error {
+                    ValueError::Error(m) => self.errors.push(m),
+                    ValueError::Return(v) => {
+                        self.environment = *self.environment.enclosing.take().unwrap();
+                        return Err(ValueError::Return(v));
+                    }
+                },
             }
         }
         self.environment = *self.environment.enclosing.take().unwrap();
+        Ok(())
     }
 
-    fn evaluate(&mut self, expr: &Expr) -> Result<Value, String> {
+    fn evaluate(&mut self, expr: &Expr) -> Result<Value, ValueError> {
         match expr {
             Expr::Literal(v) => Ok(v.clone()),
             Expr::Logical(l, t, r) => self.visit_logical_expr(l, t, r),
@@ -155,7 +177,7 @@ impl<'a> Interpreter<'a> {
         left: &Expr,
         token: &Token,
         right: &Expr,
-    ) -> Result<Value, String> {
+    ) -> Result<Value, ValueError> {
         let left_value = self.evaluate(left)?;
 
         if token.token_type == TokenType::Or {
@@ -171,7 +193,7 @@ impl<'a> Interpreter<'a> {
         self.evaluate(right)
     }
 
-    fn visit_unary_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
+    fn visit_unary_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, ValueError> {
         let right = self.evaluate(expr)?;
 
         match token.token_type {
@@ -179,27 +201,38 @@ impl<'a> Interpreter<'a> {
                 if let Some(n) = right.get_number() {
                     Ok(Value::Number(-n))
                 } else {
-                    Err(format!(
+                    let msg = format!(
                         "[line {}] Not a number for MINUS operation.",
                         token.line_number
-                    ))
+                    );
+                    Err(ValueError::Error(msg))
                 }
             }
             TokenType::Bang => Ok(Value::Bool(!right.is_truthy())),
-            _ => Err(format!(
-                "[line {}] Invalid operation for unary expression.",
-                token.line_number
-            )),
+            _ => {
+                let msg = format!(
+                    "[line {}] Invalid operation for unary expression.",
+                    token.line_number
+                );
+                Err(ValueError::Error(msg))
+            }
         }
     }
 
-    fn visit_variable_expr(&self, token: &Token) -> Result<Value, String> {
-        self.environment.get(token)
+    fn visit_variable_expr(&self, token: &Token) -> Result<Value, ValueError> {
+        // self.environment.get(token) // search globals first
+        match self.environment.get(token) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(ValueError::Error(e)),
+        }
     }
 
-    fn visit_assign_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, String> {
+    fn visit_assign_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, ValueError> {
         let value = self.evaluate(expr)?;
-        self.environment.assign(token, value.clone())
+        match self.environment.assign(token, value.clone()) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(ValueError::Error(e)),
+        }
     }
 
     fn visit_binary_expr(
@@ -207,78 +240,105 @@ impl<'a> Interpreter<'a> {
         left_expr: &Expr,
         token: &Token,
         right_expr: &Expr,
-    ) -> Result<Value, String> {
+    ) -> Result<Value, ValueError> {
         let left = self.evaluate(left_expr)?;
         let right = self.evaluate(right_expr)?;
 
         match token.token_type {
             TokenType::Minus => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l - r)),
-                _ => Err(format!(
-                    "[line {}] Not a number for minus operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number for minus operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::Slash => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l / r)),
-                _ => Err(format!(
-                    "[line {}] Not a number for division operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number for division operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::Star => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l * r)),
-                _ => Err(format!(
-                    "[line {}] Not a number for multiply operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number for multiply operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::Plus => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l + r)),
                 (Value::String(l), Value::String(r)) => Ok(Value::String(l + &r)),
-                _ => Err(format!(
-                    "[line {}] Not a number or string for plus operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number or string for plus operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::Greater => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Bool(l > r)),
                 (Value::String(l), Value::String(r)) => Ok(Value::Bool(l > r)),
-                _ => Err(format!(
-                    "[line {}] Not a number or string for greater operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number or string for greater operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::GreaterEqual => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Bool(l >= r)),
                 (Value::String(l), Value::String(r)) => Ok(Value::Bool(l >= r)),
-                _ => Err(format!(
-                    "[line {}] Not a number or string for greater equal operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number or string for greater equal operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::Less => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Bool(l < r)),
                 (Value::String(l), Value::String(r)) => Ok(Value::Bool(l < r)),
-                _ => Err(format!(
-                    "[line {}] Not a number or string for less operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number or string for less operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::LessEqual => match (left, right) {
                 (Value::Number(l), Value::Number(r)) => Ok(Value::Bool(l <= r)),
                 (Value::String(l), Value::String(r)) => Ok(Value::Bool(l <= r)),
-                _ => Err(format!(
-                    "[line {}] Not a number or string for less equal operation",
-                    token.line_number,
-                )),
+                _ => {
+                    let msg = format!(
+                        "[line {}] Not a number or string for less equal operation",
+                        token.line_number,
+                    );
+                    Err(ValueError::Error(msg))
+                }
             },
             TokenType::BangEqual => Ok(Value::Bool(!left.is_equal(right))),
             TokenType::EqualEqual => Ok(Value::Bool(left.is_equal(right))),
-            _ => Err(format!(
-                "[line {}] Invalid operation {} for binary expression.",
-                token.line_number, token.token_type
-            )),
+            _ => {
+                let msg = format!(
+                    "[line {}] Invalid operation {} for binary expression.",
+                    token.line_number, token.token_type
+                );
+                Err(ValueError::Error(msg))
+            }
         }
     }
 
@@ -287,7 +347,7 @@ impl<'a> Interpreter<'a> {
         callee: &Expr,
         paren: &Token,
         args: &Vec<Expr>,
-    ) -> Result<Value, String> {
+    ) -> Result<Value, ValueError> {
         let callee_func = self.evaluate(callee)?;
         let mut arguments = Vec::new();
         for arg in args {
@@ -296,20 +356,22 @@ impl<'a> Interpreter<'a> {
 
         if let Some(func) = callee_func.is_callable() {
             if args.len() != func.arity() {
-                return Err(format!(
+                let msg = format!(
                     "[line {}] Expected {} arguments, but got {}.",
                     paren.line_number,
                     func.arity(),
                     args.len()
-                ));
+                );
+                return Err(ValueError::Error(msg));
             }
 
             func.call(self, &arguments)
         } else {
-            Err(format!(
+            let msg = format!(
                 "[line {}] Can only call functions and classes.",
                 paren.line_number
-            ))
+            );
+            Err(ValueError::Error(msg))
         }
     }
 }

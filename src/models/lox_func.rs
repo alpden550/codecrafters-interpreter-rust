@@ -1,4 +1,5 @@
 use crate::environments::Environment;
+use crate::errors::ValueError;
 use crate::interpreter::Interpreter;
 use crate::models::callable::Callable;
 use crate::models::statements::Stmt;
@@ -13,7 +14,6 @@ pub struct LoxFunction {
     body: Vec<Stmt>,
 }
 
-#[allow(dead_code)]
 impl LoxFunction {
     pub fn new(token: Token, params: Vec<Token>, body: Vec<Stmt>) -> Self {
         LoxFunction {
@@ -39,13 +39,19 @@ impl Callable for LoxFunction {
         self.params.len()
     }
 
-    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value, String> {
-        let mut env = Environment::new(Some(Box::new(interpreter.globals.clone())));
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value, ValueError> {
+        let mut env = Environment::new(Some(Box::new(interpreter.environment.clone()))); // globals
         for (i, param) in self.params.iter().enumerate() {
             env.define(param.name.clone(), args.get(i).unwrap().clone());
         }
 
-        interpreter.execute_block(&self.body, env);
+        match interpreter.execute_block(&self.body, env) {
+            Ok(_) => {}
+            Err(v) => match v {
+                ValueError::Error(_) => {}
+                ValueError::Return(v) => return Ok(v),
+            },
+        };
 
         Ok(Value::Nil)
     }
