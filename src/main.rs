@@ -2,6 +2,7 @@ mod environments;
 mod errors;
 mod interpreter;
 mod models;
+mod native_funcs;
 mod parser;
 mod scanner;
 
