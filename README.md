@@ -13,6 +13,7 @@ This code follows the book
 - Parsing and evaluate expressions;
 - Statements and state, Global and local scopes;
 - Control Flow: Conditional Execution (if statement), Logical Operators(and, or), While Loops, For Loop
+- Functions: native functions(clock() as example), lox functions
 
 ```bash
 ./your_program.sh file.lox
@@ -21,81 +22,41 @@ This code follows the book
 Your lox file contains:
 
 ```file.lox
-var a = "global a";
-var b = "global b";
-var c = "global c";
-{
-    var a = "outer a";
-    var b = "outer b";
-        {
-            var a = "inner a";
-            print a;
-            print b;
-            print c;
-        }
-    print a;
-    print b;
-    print c;
-}
-print a;
-print b;
-print c;
+var start = clock();
 
-{
-    var calculated = (1234 * (1456/ 44 + (1987 - 264)) / 34);
-    var is_true = true == !nil;
-    print calculated;
-    print is_true;
-    print (true == !"") == (!false);
-}
-print calculated;
-print is_true;
-
-print "hi" or 2; // "hi".
-print nil or "yes"; // "yes"
-print 1 and 0; // 0
-print 1 and 1; // 1
-
-var condition = 0;
-while (condition <= 5) {
-    print condition;
-    condition = condition + 1;
+fun procedure() {
+  print "don't return anything";
 }
 
-for (var i = 0; i < 3; i = i + 1) {
+var result = procedure();
+print result; //  nil
+
+fun count(n) {
+  var i = 1;
+  while (true) {
+    if (i == n + 1) {
+        return i;
+    }
     print i;
+    i = i + 1;
+  }
 }
-print i;
+
+var n = count(5);
+print n;  // 6
+print clock() - start;
 ```
 
 Output:
 
 ```bash
-inner a
-outer b
-global c
-outer a
-outer b
-global c
-global a
-global b
-global c
-63735.77005347593
-true
-true
-hi
-yes
-0
-0
+don't return anything
+nil
 1
 2
 3
 4
 5
-0
-1
-2
-[line 28] Undefined variable 'calculated'.
-[line 29] Undefined variable 'is_true'.
-[line 45] Undefined variable 'i'.
+6
+0.00002002716064453125
 ```
