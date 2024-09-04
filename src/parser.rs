@@ -157,6 +157,10 @@ impl<'a> Parser<'a> {
             return self.print_statement();
         }
 
+        if self.matches(&[TokenType::Return]) {
+            return self.return_statement();
+        }
+
         if self.matches(&[TokenType::While]) {
             return self.while_statement();
         }
@@ -241,6 +245,28 @@ impl<'a> Parser<'a> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
         Ok(Stmt::Print(expr))
+    }
+
+    fn return_statement(&mut self) -> Result<Stmt, String> {
+        let token = self.previous().clone();
+        let value;
+        if !self.check(&TokenType::Semicolon) {
+            value = Some(self.expression()?);
+        } else {
+            value = None;
+        }
+
+        self.consume(
+            TokenType::Semicolon,
+            format!(
+                "[line {}] Expect ';' after return value.",
+                token.line_number
+            )
+            .as_str(),
+        )?;
+
+        let return_stmt = Stmt::Return(token, value);
+        Ok(return_stmt)
     }
 
     fn while_statement(&mut self) -> Result<Stmt, String> {
