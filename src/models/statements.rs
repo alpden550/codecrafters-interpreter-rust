@@ -8,6 +8,7 @@ pub enum Stmt {
     Function(Token, Vec<Token>, Box<Vec<Stmt>>),
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
     Print(Expr),
+    Return(Token, Option<Expr>),
     Var(Token, Option<Expr>),
     While(Expr, Box<Stmt>),
     Block(Box<Vec<Stmt>>),
@@ -22,6 +23,7 @@ impl Display for Stmt {
             }
             Self::If(e, tb, eb) => write!(f, "If {} for than {:?} else {:?}", e, tb, eb),
             Self::Print(e) => write!(f, "Print {e}"),
+            Self::Return(keyword, value) => write!(f, "{keyword} return {:?}", value),
             Self::Var(t, e) => write!(f, "Variable {t} for {:?}", e),
             Self::While(e, s) => write!(f, "While {} for {}", e, s),
             Self::Block(s) => write!(f, "Block for {:?}", s),
