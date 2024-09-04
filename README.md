@@ -22,8 +22,6 @@ This code follows the book
 Your lox file contains:
 
 ```file.lox
-var start = clock();
-
 fun procedure() {
   print "don't return anything";
 }
@@ -44,6 +42,18 @@ fun count(n) {
 
 var n = count(5);
 print n;  // 6
+
+fun fib(n) {
+  if (n <= 1) {
+    return n;
+  }
+  return fib(n - 2) + fib(n - 1);
+}
+
+var start = clock();
+for (var i = 0; i < 20; i = i + 1) {
+  print fib(i);
+}
 print clock() - start;
 ```
 
@@ -58,5 +68,25 @@ nil
 4
 5
 6
-0.00002002716064453125
+0
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+89
+144
+233
+377
+610
+987
+1597
+2584
+4181
+0.08719301223754883
 ```
