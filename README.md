@@ -13,7 +13,7 @@ This code follows the book
 - Parsing and evaluate expressions;
 - Statements and state, Global and local scopes;
 - Control Flow: Conditional Execution (if statement), Logical Operators(and, or), While Loops, For Loop
-- Functions: native functions(clock() as example), lox functions
+- Functions: native functions(clock() as example), lox functions, Local Functions and Closures
 
 ```bash
 ./your_program.sh file.lox
@@ -31,13 +31,11 @@ print result; //  nil
 
 fun count(n) {
   var i = 1;
-  while (true) {
-    if (i == n + 1) {
-        return i;
-    }
+  while (i <= n) {
     print i;
     i = i + 1;
   }
+  return i;
 }
 
 var n = count(5);
@@ -55,6 +53,20 @@ for (var i = 0; i < 20; i = i + 1) {
   print fib(i);
 }
 print clock() - start;
+
+fun makeCounter() {
+  var i = 0;
+  fun count() {
+    i = i + 1;
+    print i;
+  }
+
+  return count;
+}
+
+var counter = makeCounter();
+counter(); // "1".
+counter(); // "2".
 ```
 
 Output:
@@ -88,5 +100,7 @@ nil
 1597
 2584
 4181
-0.08719301223754883
+0.02478313446044922
+1
+2
 ```

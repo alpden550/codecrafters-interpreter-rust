@@ -5,21 +5,30 @@ use crate::models::callable::Callable;
 use crate::models::statements::Stmt;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
+use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct LoxFunction {
     token: Token,
     params: Vec<Token>,
     body: Vec<Stmt>,
+    closure: Rc<RefCell<Environment>>,
 }
 
 impl LoxFunction {
-    pub fn new(token: Token, params: Vec<Token>, body: Vec<Stmt>) -> Self {
+    pub fn new(
+        token: Token,
+        params: Vec<Token>,
+        body: Vec<Stmt>,
+        closure: Rc<RefCell<Environment>>,
+    ) -> Self {
         LoxFunction {
             token,
             params,
             body,
+            closure,
         }
     }
 }
@@ -40,12 +49,13 @@ impl Callable for LoxFunction {
     }
 
     fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value, ValueError> {
-        let mut env = Environment::new(Some(Box::new(interpreter.environment.clone()))); // globals
+        let mut env = Environment::new(Some(Rc::clone(&self.closure)));
+
         for (i, param) in self.params.iter().enumerate() {
             env.define(param.name.clone(), args.get(i).unwrap().clone());
         }
 
-        match interpreter.execute_block(&self.body, env) {
+        match interpreter.execute_block(&self.body, Rc::new(RefCell::new(env))) {
             Ok(_) => {}
             Err(v) => match v {
                 ValueError::Error(_) => {}

@@ -7,27 +7,29 @@ use crate::models::token_types::TokenType;
 use crate::models::tokens::Token;
 use crate::models::values::Value;
 use crate::native_funcs::clock_func::ClockFunction;
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::Arc;
 
 #[allow(dead_code)]
 pub struct Interpreter<'a> {
-    pub globals: Environment,
-    pub environment: Environment,
+    pub globals: Rc<RefCell<Environment>>,
+    pub environment: Rc<RefCell<Environment>>,
     pub stmts: &'a [Stmt],
     pub errors: Vec<String>,
 }
 
 impl<'a> Interpreter<'a> {
     pub fn new(stmts: &'a [Stmt]) -> Self {
-        let mut globals = Environment::new(None);
-        globals.define(
+        let globals = Rc::new(RefCell::new(Environment::new(None)));
+        globals.borrow_mut().define(
             ClockFunction.to_string(),
             Value::Callable(Arc::new(ClockFunction)),
         );
 
         Interpreter {
-            globals: globals.clone(),
-            environment: globals,
+            globals: Rc::clone(&globals),
+            environment: Rc::clone(&globals),
             stmts,
             errors: Vec::new(),
         }
@@ -71,17 +73,14 @@ impl<'a> Interpreter<'a> {
                     }
                     None => {}
                 }
-                self.environment.define(t.clone().name, value);
+                self.environment.borrow_mut().define(t.clone().name, value);
                 Ok(())
             }
             Stmt::While(e, s) => self.visit_while_stmt(e, s),
             Stmt::Block(s) => {
-                // let previous = self.environment.clone();
-                // let env = Environment::new(Some(Box::new(previous)));
-                self.execute_block(
-                    s,
-                    Environment::new(Some(Box::new(self.environment.clone()))),
-                )
+                let previous = Rc::clone(&self.environment);
+                let new_env = Rc::new(RefCell::new(Environment::new(Some(previous))));
+                self.execute_block(s, new_env)
             }
         }
     }
@@ -96,8 +95,11 @@ impl<'a> Interpreter<'a> {
             token.clone(),
             Vec::from(params),
             Vec::from(body),
+            Rc::clone(&self.environment),
         )));
-        self.environment.define(token.name.clone(), func); // use globals
+        self.environment
+            .borrow_mut()
+            .define(token.name.clone(), func);
 
         Ok(())
     }
@@ -140,7 +142,12 @@ impl<'a> Interpreter<'a> {
         Ok(())
     }
 
-    pub fn execute_block(&mut self, stmts: &[Stmt], env: Environment) -> Result<(), ValueError> {
+    pub fn execute_block(
+        &mut self,
+        stmts: &[Stmt],
+        env: Rc<RefCell<Environment>>,
+    ) -> Result<(), ValueError> {
+        let previous = Rc::clone(&self.environment);
         self.environment = env;
 
         for stmt in stmts {
@@ -149,13 +156,13 @@ impl<'a> Interpreter<'a> {
                 Err(error) => match error {
                     ValueError::Error(m) => self.errors.push(m),
                     ValueError::Return(v) => {
-                        self.environment = *self.environment.enclosing.take().unwrap();
+                        self.environment = previous;
                         return Err(ValueError::Return(v));
                     }
                 },
             }
         }
-        self.environment = *self.environment.enclosing.take().unwrap();
+        self.environment = previous;
         Ok(())
     }
 
@@ -220,8 +227,7 @@ impl<'a> Interpreter<'a> {
     }
 
     fn visit_variable_expr(&self, token: &Token) -> Result<Value, ValueError> {
-        // self.environment.get(token) // search globals first
-        match self.environment.get(token) {
+        match self.environment.borrow().get(token) {
             Ok(v) => Ok(v),
             Err(e) => Err(ValueError::Error(e)),
         }
@@ -229,7 +235,7 @@ impl<'a> Interpreter<'a> {
 
     fn visit_assign_expr(&mut self, token: &Token, expr: &Expr) -> Result<Value, ValueError> {
         let value = self.evaluate(expr)?;
-        match self.environment.assign(token, value.clone()) {
+        match self.environment.borrow_mut().assign(token, value.clone()) {
             Ok(v) => Ok(v),
             Err(e) => Err(ValueError::Error(e)),
         }

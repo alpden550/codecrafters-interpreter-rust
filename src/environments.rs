@@ -1,12 +1,14 @@
 use crate::models::values::Value;
+use std::cell::RefCell;
 
 use crate::models::tokens::Token;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub struct Environment {
-    pub enclosing: Option<Box<Environment>>,
+    pub enclosing: Option<Rc<RefCell<Environment>>>,
     pub values: HashMap<String, Value>,
 }
 
@@ -20,7 +22,7 @@ impl<'a> Display for Environment {
 }
 
 impl Environment {
-    pub fn new(enclosing: Option<Box<Environment>>) -> Self {
+    pub fn new(enclosing: Option<Rc<RefCell<Environment>>>) -> Self {
         Self {
             enclosing,
             values: HashMap::new(),
@@ -32,11 +34,11 @@ impl Environment {
     }
 
     pub fn assign(&mut self, token: &Token, value: Value) -> Result<Value, String> {
-        if self.values.contains_key(token.name.as_str()) {
+        if self.values.contains_key(&token.name) {
             self.values.insert(token.name.clone(), value.clone());
             Ok(value)
-        } else if let Some(ref mut enclosing) = self.enclosing {
-            enclosing.assign(token, value)
+        } else if let Some(enclosing) = &self.enclosing {
+            enclosing.borrow_mut().assign(token, value)
         } else {
             Err(format!(
                 "[line {}] Undefined variable '{}'.",
@@ -48,8 +50,8 @@ impl Environment {
     pub fn get(&self, token: &Token) -> Result<Value, String> {
         if let Some(value) = self.values.get(token.name.as_str()) {
             Ok(value.clone())
-        } else if let Some(ref enclosing) = self.enclosing {
-            enclosing.get(token)
+        } else if let Some(enclosing) = &self.enclosing {
+            enclosing.borrow().get(token)
         } else {
             Err(format!(
                 "[line {}] Undefined variable '{}'.",

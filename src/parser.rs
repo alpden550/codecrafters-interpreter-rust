@@ -282,7 +282,8 @@ impl<'a> Parser<'a> {
         }
 
         let body = self.statement()?;
-        Ok(Stmt::While(condition, Box::new(body)))
+        let while_stmt = Stmt::While(condition, Box::new(body));
+        Ok(while_stmt)
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, String> {
