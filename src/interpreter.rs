@@ -147,7 +147,8 @@ impl<'a> Interpreter<'a> {
         stmts: &[Stmt],
         env: Rc<RefCell<Environment>>,
     ) -> Result<(), ValueError> {
-        let previous = Rc::clone(&self.environment);
+        // let previous = Rc::clone(&self.environment);
+        let previous = Rc::clone(&env);
         self.environment = env;
 
         for stmt in stmts {
